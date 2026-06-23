@@ -115,6 +115,7 @@ header{position:sticky;top:0;z-index:20;background:var(--bg);
   </div>
 </div><script>
 var grid = document.getElementById('grid');
+  var body = document.body;
 var empty = document.getElementById('empty');
 var count = document.getElementById('count');
 var reset = document.getElementById('reset');
@@ -413,13 +414,14 @@ function startSite() {
   });
 
   search.oninput = filtr;
-  mode.onclick = function() {
-  strictMode = !strictMode;
 
-  if (strictMode) {
+mode.onclick = function() {
+  if (strictMode === false) {
+    strictMode = true;
     mode.textContent = 'Режим: И';
     mode.classList.add('active');
   } else {
+    strictMode = false;
     mode.textContent = 'Режим: ИЛИ';
     mode.classList.remove('active');
   }
@@ -466,52 +468,49 @@ function filtr() {
 
     var okName = name.indexOf(q) >= 0;
 
-    var estVybrannyeFiltry = akt.svet.length > 0 || akt.pochva.length > 0;
+    var svetVybran = akt.svet.length > 0;
+    var pochvaVybrana = akt.pochva.length > 0;
 
-    var pokazatPoFiltru = false;
+    var svetPodhodit = false;
+    var pochvaPodhodit = false;
 
-    if (!estVybrannyeFiltry) {
-      pokazatPoFiltru = true;
+    if (!svetVybran) {
+      svetPodhodit = true;
     }
 
-    if (!strictMode) {
-      akt.svet.forEach(function(vybrannyySvet) {
-        if (svet.indexOf(vybrannyySvet) >= 0) {
-          pokazatPoFiltru = true;
-        }
-      });
+    if (!pochvaVybrana) {
+      pochvaPodhodit = true;
+    }
 
-      akt.pochva.forEach(function(vybrannayaPochva) {
-        if (pochva.indexOf(vybrannayaPochva) >= 0) {
+    akt.svet.forEach(function(v) {
+      if (svet.indexOf(v) >= 0) {
+        svetPodhodit = true;
+      }
+    });
+
+    akt.pochva.forEach(function(v) {
+      if (pochva.indexOf(v) >= 0) {
+        pochvaPodhodit = true;
+      }
+    });
+
+    var pokazatPoFiltru = true;
+
+    if (!strictMode) {
+      if (svetVybran || pochvaVybrana) {
+        pokazatPoFiltru = false;
+
+        if (svetVybran && svetPodhodit) {
           pokazatPoFiltru = true;
         }
-      });
+
+        if (pochvaVybrana && pochvaPodhodit) {
+          pokazatPoFiltru = true;
+        }
+      }
     }
 
     if (strictMode) {
-      var svetPodhodit = true;
-      var pochvaPodhodit = true;
-
-      if (akt.svet.length > 0) {
-        svetPodhodit = false;
-
-        akt.svet.forEach(function(vybrannyySvet) {
-          if (svet.indexOf(vybrannyySvet) >= 0) {
-            svetPodhodit = true;
-          }
-        });
-      }
-
-      if (akt.pochva.length > 0) {
-        pochvaPodhodit = false;
-
-        akt.pochva.forEach(function(vybrannayaPochva) {
-          if (pochva.indexOf(vybrannayaPochva) >= 0) {
-            pochvaPodhodit = true;
-          }
-        });
-      }
-
       pokazatPoFiltru = svetPodhodit && pochvaPodhodit;
     }
 

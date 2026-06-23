@@ -84,14 +84,18 @@ header{position:sticky;top:0;z-index:20;background:var(--bg);
   <div class="empty" id="empty" style="display:none">
     <div class="big">🤷</div>Ничего не найдено
   </div>
-</div>
-<script>
+</div><script>
 var grid = document.getElementById('grid');
 var empty = document.getElementById('empty');
 var count = document.getElementById('count');
 var reset = document.getElementById('reset');
 var search = document.getElementById('search');
-var akt = { svet: [], pochva: [] };
+
+var akt = {
+  svet: [],
+  pochva: []
+};
+
 var cards = [];
 
 function cleanText(text) {
@@ -122,11 +126,14 @@ function normalizeTag(text) {
 }
 
 function splitTags(text) {
-  if (!text) return [];
+  if (!text) {
+    return [];
+  }
 
   return String(text)
     .replaceAll('|', ',')
     .replaceAll(';', ',')
+    .replaceAll('/', ',')
     .split(',')
     .map(function(x) {
       return normalizeTag(x);
@@ -273,7 +280,9 @@ function loadNewCSV() {
         var pochva = cleanText(row[pochvaCol]);
         var svet = cleanText(row[svetCol]);
 
-        if (!name) return;
+        if (!name) {
+          return;
+        }
 
         var key = normalizeName(name);
 
@@ -331,7 +340,9 @@ function rebuildFilters() {
   var svetRow = document.querySelector('.chip[data-g="svet"]') ? document.querySelector('.chip[data-g="svet"]').parentElement : null;
   var pochvaRow = document.querySelector('.chip[data-g="pochva"]') ? document.querySelector('.chip[data-g="pochva"]').parentElement : null;
 
-  if (!svetRow || !pochvaRow) return;
+  if (!svetRow || !pochvaRow) {
+    return;
+  }
 
   svetRow.innerHTML = '<span class="label">Свет</span>';
   pochvaRow.innerHTML = '<span class="label">Почва</span>';
@@ -364,7 +375,7 @@ function startSite() {
 
   [].slice.call(document.querySelectorAll('.chip')).forEach(function(b) {
     b.onclick = function() {
-      vkl(akt[b.dataset.g], b.dataset.v);
+      toggleValue(akt[b.dataset.g], b.dataset.v);
       b.classList.toggle('active');
       filtr();
     };
@@ -374,7 +385,11 @@ function startSite() {
 
   reset.onclick = function() {
     search.value = '';
-    akt = { svet: [], pochva: [] };
+
+    akt = {
+      svet: [],
+      pochva: []
+    };
 
     [].slice.call(document.querySelectorAll('.chip.active')).forEach(function(c) {
       c.classList.remove('active');
@@ -386,32 +401,65 @@ function startSite() {
   filtr();
 }
 
-function vkl(arr, v) {
-  var i = arr.indexOf(v);
+function toggleValue(arr, value) {
+  var i = arr.indexOf(value);
 
   if (i < 0) {
-    arr.push(v);
+    arr.push(value);
   } else {
     arr.splice(i, 1);
   }
 }
 
-function vse_v(n, e) {
-  return n.every(function(v) {
-    return e.indexOf(v) >= 0;
-  });
+/*
+  Это главная новая логика.
+
+  Если в разделе ничего не выбрано — подходит любое растение.
+  Если выбрано одно или несколько значений — растение подходит,
+  если у него есть хотя бы одно из выбранных значений.
+
+  Например:
+  Свет: тень, полутень
+  Покажет растения, где есть тень ИЛИ полутень.
+
+  Почва: плодородные почвы, песчаные почвы
+  Покажет растения, где есть плодородные ИЛИ песчаные.
+
+  Но между Светом и Почвой работает И.
+  Например:
+  Свет: тень
+  Почва: плодородные почвы
+  Покажет только растения, где есть тень И плодородные почвы.
+*/
+function matchesGroup(selectedValues, plantValues) {
+  if (!selectedValues.length) {
+    return true;
+  }
+
+  for (var i = 0; i < selectedValues.length; i++) {
+    if (plantValues.indexOf(selectedValues[i]) >= 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function filtr() {
-  var q = search.value.trim().toLowerCase();
+  var q = normalizeName(search.value);
   var n = 0;
 
   cards.forEach(function(c) {
-    var okN = c.dataset.name.indexOf(q) >= 0;
+    var name = normalizeName(c.dataset.name || '');
     var svet = c.dataset.svet ? c.dataset.svet.split('|') : [];
     var pochva = c.dataset.pochva ? c.dataset.pochva.split('|') : [];
 
-    var show = okN && vse_v(akt.svet, svet) && vse_v(akt.pochva, pochva);
+    var okName = name.indexOf(q) >= 0;
+
+    var okSvet = matchesGroup(akt.svet, svet);
+    var okPochva = matchesGroup(akt.pochva, pochva);
+
+    var show = okName && okSvet && okPochva;
 
     c.style.display = show ? '' : 'none';
 
@@ -421,8 +469,14 @@ function filtr() {
   });
 
   count.innerHTML = 'Найдено: <b>' + n + '</b> из ' + cards.length;
+
   empty.style.display = n ? 'none' : 'block';
-  reset.style.display = (q || akt.svet.length || akt.pochva.length) ? 'inline-block' : 'none';
+
+  reset.style.display = (
+    q ||
+    akt.svet.length ||
+    akt.pochva.length
+  ) ? 'inline-block' : 'none';
 }
 
 var body = document.body;
@@ -442,10 +496,10 @@ tbtn.onclick = function() {
 };
 
 try {
-  var sv = localStorage.getItem('theme');
+  var savedTheme = localStorage.getItem('theme');
 
-  if (sv) {
-    setTheme(sv);
+  if (savedTheme) {
+    setTheme(savedTheme);
   } else if (matchMedia('(prefers-color-scheme:dark)').matches) {
     setTheme('dark');
   }

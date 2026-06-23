@@ -119,7 +119,9 @@ var empty = document.getElementById('empty');
 var count = document.getElementById('count');
 var reset = document.getElementById('reset');
 var search = document.getElementById('search');
+var mode = document.getElementById('mode');
 
+var strictMode = false;
 var akt = {
   svet: [],
   pochva: []
@@ -411,6 +413,19 @@ function startSite() {
   });
 
   search.oninput = filtr;
+  mode.onclick = function() {
+  strictMode = !strictMode;
+
+  if (strictMode) {
+    mode.textContent = 'Режим: И';
+    mode.classList.add('active');
+  } else {
+    mode.textContent = 'Режим: ИЛИ';
+    mode.classList.remove('active');
+  }
+
+  filtr();
+};
 
   reset.onclick = function() {
     search.value = '';
@@ -459,17 +474,46 @@ function filtr() {
       pokazatPoFiltru = true;
     }
 
-    akt.svet.forEach(function(vybrannyySvet) {
-      if (svet.indexOf(vybrannyySvet) >= 0) {
-        pokazatPoFiltru = true;
-      }
-    });
+    if (!strictMode) {
+      akt.svet.forEach(function(vybrannyySvet) {
+        if (svet.indexOf(vybrannyySvet) >= 0) {
+          pokazatPoFiltru = true;
+        }
+      });
 
-    akt.pochva.forEach(function(vybrannayaPochva) {
-      if (pochva.indexOf(vybrannayaPochva) >= 0) {
-        pokazatPoFiltru = true;
+      akt.pochva.forEach(function(vybrannayaPochva) {
+        if (pochva.indexOf(vybrannayaPochva) >= 0) {
+          pokazatPoFiltru = true;
+        }
+      });
+    }
+
+    if (strictMode) {
+      var svetPodhodit = true;
+      var pochvaPodhodit = true;
+
+      if (akt.svet.length > 0) {
+        svetPodhodit = false;
+
+        akt.svet.forEach(function(vybrannyySvet) {
+          if (svet.indexOf(vybrannyySvet) >= 0) {
+            svetPodhodit = true;
+          }
+        });
       }
-    });
+
+      if (akt.pochva.length > 0) {
+        pochvaPodhodit = false;
+
+        akt.pochva.forEach(function(vybrannayaPochva) {
+          if (pochva.indexOf(vybrannayaPochva) >= 0) {
+            pochvaPodhodit = true;
+          }
+        });
+      }
+
+      pokazatPoFiltru = svetPodhodit && pochvaPodhodit;
+    }
 
     var show = okName && pokazatPoFiltru;
 

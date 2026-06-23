@@ -411,40 +411,6 @@ function toggleValue(arr, value) {
   }
 }
 
-/*
-  Это главная новая логика.
-
-  Если в разделе ничего не выбрано — подходит любое растение.
-  Если выбрано одно или несколько значений — растение подходит,
-  если у него есть хотя бы одно из выбранных значений.
-
-  Например:
-  Свет: тень, полутень
-  Покажет растения, где есть тень ИЛИ полутень.
-
-  Почва: плодородные почвы, песчаные почвы
-  Покажет растения, где есть плодородные ИЛИ песчаные.
-
-  Но между Светом и Почвой работает И.
-  Например:
-  Свет: тень
-  Почва: плодородные почвы
-  Покажет только растения, где есть тень И плодородные почвы.
-*/
-function matchesGroup(selectedValues, plantValues) {
-  if (!selectedValues.length) {
-    return true;
-  }
-
-  for (var i = 0; i < selectedValues.length; i++) {
-    if (plantValues.indexOf(selectedValues[i]) >= 0) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 function filtr() {
   var q = normalizeName(search.value);
   var n = 0;
@@ -456,27 +422,27 @@ function filtr() {
 
     var okName = name.indexOf(q) >= 0;
 
-    var selectedSomething = akt.svet.length || akt.pochva.length;
+    var estVybrannyeFiltry = akt.svet.length > 0 || akt.pochva.length > 0;
 
-    var okFilter = false;
+    var pokazatPoFiltru = false;
 
-    if (!selectedSomething) {
-      okFilter = true;
+    if (!estVybrannyeFiltry) {
+      pokazatPoFiltru = true;
     }
 
-    akt.svet.forEach(function(v) {
-      if (svet.indexOf(v) >= 0) {
-        okFilter = true;
+    akt.svet.forEach(function(vybrannyySvet) {
+      if (svet.indexOf(vybrannyySvet) >= 0) {
+        pokazatPoFiltru = true;
       }
     });
 
-    akt.pochva.forEach(function(v) {
-      if (pochva.indexOf(v) >= 0) {
-        okFilter = true;
+    akt.pochva.forEach(function(vybrannayaPochva) {
+      if (pochva.indexOf(vybrannayaPochva) >= 0) {
+        pokazatPoFiltru = true;
       }
     });
 
-    var show = okName && okFilter;
+    var show = okName && pokazatPoFiltru;
 
     c.style.display = show ? '' : 'none';
 
@@ -486,7 +452,6 @@ function filtr() {
   });
 
   count.innerHTML = 'Найдено: <b>' + n + '</b> из ' + cards.length;
-
   empty.style.display = n ? 'none' : 'block';
 
   reset.style.display = (
@@ -495,8 +460,6 @@ function filtr() {
     akt.pochva.length
   ) ? 'inline-block' : 'none';
 }
-
-var body = document.body;
 var tbtn = document.getElementById('theme');
 
 function setTheme(t) {

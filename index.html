@@ -456,10 +456,27 @@ function filtr() {
 
     var okName = name.indexOf(q) >= 0;
 
-    var okSvet = matchesGroup(akt.svet, svet);
-    var okPochva = matchesGroup(akt.pochva, pochva);
+    var selectedSomething = akt.svet.length || akt.pochva.length;
 
-    var show = okName && okSvet && okPochva;
+    var okFilter = false;
+
+    if (!selectedSomething) {
+      okFilter = true;
+    }
+
+    akt.svet.forEach(function(v) {
+      if (svet.indexOf(v) >= 0) {
+        okFilter = true;
+      }
+    });
+
+    akt.pochva.forEach(function(v) {
+      if (pochva.indexOf(v) >= 0) {
+        okFilter = true;
+      }
+    });
+
+    var show = okName && okFilter;
 
     c.style.display = show ? '' : 'none';
 

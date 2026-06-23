@@ -525,8 +525,12 @@ function toggleValue(arr, value) {
   }
 }
 
-function hasAllTags(selectedTags, cardTags) {
-  return selectedTags.every(function(tag) {
+function hasAnyTag(selectedTags, cardTags) {
+  if (selectedTags.length === 0) {
+    return true;
+  }
+
+  return selectedTags.some(function(tag) {
     return cardTags.indexOf(tag) >= 0;
   });
 }
@@ -546,10 +550,10 @@ function filtr() {
       ? card.dataset.pochva.split('|')
       : [];
 
-    var show =
-      nameOk &&
-      hasAllTags(akt.svet, svet) &&
-      hasAllTags(akt.pochva, pochva);
+   var show =
+  nameOk &&
+  hasAnyTag(akt.svet, svet) &&
+  hasAnyTag(akt.pochva, pochva);
 
     card.style.display = show ? '' : 'none';
 

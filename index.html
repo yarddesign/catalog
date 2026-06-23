@@ -91,11 +91,32 @@ var empty = document.getElementById('empty');
 var count = document.getElementById('count');
 var reset = document.getElementById('reset');
 var search = document.getElementById('search');
-var akt = { svet: [], pochva: [] };
+
+var akt = {
+  svet: [],
+  pochva: []
+};
+
 var cards = [];
+
+var LIGHT_WORDS = [
+  'солнце',
+  'полутень',
+  'тень',
+  'теневынослива',
+  'теневыносливое',
+  'теневыносливый'
+];
 
 function cleanText(text) {
   return String(text || '').trim();
+}
+
+function normalizeText(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function escapeHtml(text) {
@@ -107,68 +128,103 @@ function escapeHtml(text) {
     .replaceAll("'", '&#039;');
 }
 
-function normalizeName(text) {
-  return String(text || '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function normalizeTag(text) {
-  return String(text || '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function splitTags(text) {
+function splitToTags(text) {
   if (!text) return [];
 
   return String(text)
     .replaceAll('|', ',')
     .replaceAll(';', ',')
+    .replaceAll('/', ',')
+    .replace(/\r?\n/g, ',')
     .split(',')
-    .map(function(x) {
-      return normalizeTag(x);
+    .map(function(item) {
+      return cleanText(item);
     })
-    .filter(function(x) {
-      return x.length > 0;
+    .filter(function(item) {
+      return item.length > 0;
     });
 }
 
-function makeCard(name, norma, pochvaText, svetText) {
-  var svet = splitTags(svetText);
-  var pochva = splitTags(pochvaText);
+function uniqueTags(tags) {
+  var result = [];
+  var seen = {};
 
-  var tags = '';
+  tags.forEach(function(tag) {
+    var key = normalizeText(tag);
 
-  svet.forEach(function(t) {
-    tags += '<span class="tag s">' + escapeHtml(t) + '</span>';
+    if (!key) return;
+
+    if (!seen[key]) {
+      seen[key] = true;
+      result.push(tag);
+    }
   });
 
-  pochva.forEach(function(t) {
-    tags += '<span class="tag p">' + escapeHtml(t) + '</span>';
+  return result;
+}
+
+function isLightTag(tag) {
+  var t = normalizeText(tag);
+
+  return LIGHT_WORDS.indexOf(t) >= 0;
+}
+
+function tagsToData(tags) {
+  return uniqueTags(tags).map(function(tag) {
+    return normalizeText(tag);
+  }).join('|');
+}
+
+function formatNorma(norma) {
+  norma = cleanText(norma);
+
+  if (!norma) return '—';
+
+  if (
+    norma.indexOf('шт') >= 0 ||
+    norma.indexOf('м²') >= 0 ||
+    norma.indexOf('м2') >= 0
+  ) {
+    return norma;
+  }
+
+  return norma + ' шт/м²';
+}
+
+function makeCard(name, norma, svetTags, pochvaTags) {
+  svetTags = uniqueTags(svetTags);
+  pochvaTags = uniqueTags(pochvaTags);
+
+  var tagsHtml = '';
+
+  svetTags.forEach(function(tag) {
+    tagsHtml += '<span class="tag s">' + escapeHtml(tag) + '</span>';
+  });
+
+  pochvaTags.forEach(function(tag) {
+    tagsHtml += '<span class="tag p">' + escapeHtml(tag) + '</span>';
   });
 
   var article = document.createElement('article');
+
   article.className = 'card';
-  article.dataset.name = normalizeName(name);
-  article.dataset.svet = svet.join('|');
-  article.dataset.pochva = pochva.join('|');
+  article.dataset.name = normalizeText(name);
+  article.dataset.svet = tagsToData(svetTags);
+  article.dataset.pochva = tagsToData(pochvaTags);
 
   article.innerHTML =
     '<h3>' + escapeHtml(name) + '</h3>' +
-    '<div class="norma">' + escapeHtml(norma || '—') + ' шт/м²</div>' +
-    '<div class="tags">' + tags + '</div>';
+    '<div class="norma">' + escapeHtml(formatNorma(norma)) + '</div>' +
+    '<div class="tags">' + tagsHtml + '</div>';
 
   return article;
 }
 
 function detectSeparator(line) {
-  var commaCount = (line.match(/,/g) || []).length;
-  var semicolonCount = (line.match(/;/g) || []).length;
+  var commas = (line.match(/,/g) || []).length;
+  var semicolons = (line.match(/;/g) || []).length;
 
-  if (semicolonCount > commaCount) {
+  if (semicolons > commas) {
     return ';';
   }
 
@@ -222,18 +278,53 @@ function parseCSV(text) {
   return rows;
 }
 
-function findColumn(headers, possibleNames, defaultIndex) {
+function findColumn(headers, names, fallback) {
   for (var i = 0; i < headers.length; i++) {
-    var h = normalizeName(headers[i]);
+    var h = normalizeText(headers[i]);
 
-    for (var j = 0; j < possibleNames.length; j++) {
-      if (h.indexOf(possibleNames[j]) >= 0) {
+    for (var j = 0; j < names.length; j++) {
+      if (h.indexOf(names[j]) >= 0) {
         return i;
       }
     }
   }
 
-  return defaultIndex;
+  return fallback;
+}
+
+function isBadTagColumn(header) {
+  header = normalizeText(header);
+
+  if (!header) return false;
+
+  var badWords = [
+    'название',
+    'растение',
+    'name',
+    'норма',
+    'посад',
+    'шт',
+    'фото',
+    'ссылка',
+    'комментар',
+    'примеч',
+    'описание',
+    'description',
+    'высота',
+    'ширина',
+    'размер',
+    'цветок',
+    'цветение',
+    'период'
+  ];
+
+  for (var i = 0; i < badWords.length; i++) {
+    if (header.indexOf(badWords[i]) >= 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function loadNewCSV() {
@@ -256,26 +347,25 @@ function loadNewCSV() {
       var headers = rows[0];
 
       var nameCol = findColumn(headers, ['название', 'растение', 'name'], 0);
-      var normaCol = findColumn(headers, ['норма', 'посадки', 'шт'], 1);
-      var pochvaCol = findColumn(headers, ['почва', 'почвы'], 2);
-      var svetCol = findColumn(headers, ['свет', 'освещение'], 3);
+      var normaCol = findColumn(headers, ['норма', 'посад', 'шт'], 1);
 
       var existingNames = {};
 
       [].slice.call(document.querySelectorAll('.card')).forEach(function(card) {
-        var title = card.querySelector('h3') ? card.querySelector('h3').textContent : card.dataset.name;
-        existingNames[normalizeName(title)] = true;
+        var title = card.querySelector('h3')
+          ? card.querySelector('h3').textContent
+          : card.dataset.name;
+
+        existingNames[normalizeText(title)] = true;
       });
 
       rows.slice(1).forEach(function(row) {
         var name = cleanText(row[nameCol]);
         var norma = cleanText(row[normaCol]);
-        var pochva = cleanText(row[pochvaCol]);
-        var svet = cleanText(row[svetCol]);
 
         if (!name) return;
 
-        var key = normalizeName(name);
+        var key = normalizeText(name);
 
         if (existingNames[key]) {
           return;
@@ -283,7 +373,31 @@ function loadNewCSV() {
 
         existingNames[key] = true;
 
-        var card = makeCard(name, norma, pochva, svet);
+        var svetTags = [];
+        var pochvaTags = [];
+
+        row.forEach(function(cell, index) {
+          if (index === nameCol) return;
+          if (index === normaCol) return;
+
+          var header = headers[index] || '';
+
+          if (isBadTagColumn(header)) {
+            return;
+          }
+
+          var pieces = splitToTags(cell);
+
+          pieces.forEach(function(tag) {
+            if (isLightTag(tag)) {
+              svetTags.push(tag);
+            } else {
+              pochvaTags.push(tag);
+            }
+          });
+        });
+
+        var card = makeCard(name, norma, svetTags, pochvaTags);
         grid.appendChild(card);
       });
 
@@ -296,13 +410,17 @@ function loadNewCSV() {
 
 function prepareOldCards() {
   [].slice.call(document.querySelectorAll('.card')).forEach(function(card) {
-    card.dataset.name = normalizeName(card.dataset.name || card.textContent);
+    var name = card.querySelector('h3')
+      ? card.querySelector('h3').textContent
+      : card.dataset.name;
 
-    var svet = splitTags(card.dataset.svet || '');
-    var pochva = splitTags(card.dataset.pochva || '');
+    card.dataset.name = normalizeText(name);
 
-    card.dataset.svet = svet.join('|');
-    card.dataset.pochva = pochva.join('|');
+    var oldSvet = splitToTags(card.dataset.svet || '');
+    var oldPochva = splitToTags(card.dataset.pochva || '');
+
+    card.dataset.svet = tagsToData(oldSvet);
+    card.dataset.pochva = tagsToData(oldPochva);
   });
 }
 
@@ -314,10 +432,10 @@ function collectTags(type) {
     var arr = value ? value.split('|') : [];
 
     arr.forEach(function(tag) {
-      tag = normalizeTag(tag);
+      tag = normalizeText(tag);
 
       if (tag) {
-        result[tag] = true;
+        result[tag] = tag;
       }
     });
   });
@@ -328,30 +446,37 @@ function collectTags(type) {
 }
 
 function rebuildFilters() {
-  var svetRow = document.querySelector('.chip[data-g="svet"]') ? document.querySelector('.chip[data-g="svet"]').parentElement : null;
-  var pochvaRow = document.querySelector('.chip[data-g="pochva"]') ? document.querySelector('.chip[data-g="pochva"]').parentElement : null;
+  var oldSvetButton = document.querySelector('.chip[data-g="svet"]');
+  var oldPochvaButton = document.querySelector('.chip[data-g="pochva"]');
 
-  if (!svetRow || !pochvaRow) return;
+  if (!oldSvetButton || !oldPochvaButton) return;
+
+  var svetRow = oldSvetButton.parentElement;
+  var pochvaRow = oldPochvaButton.parentElement;
 
   svetRow.innerHTML = '<span class="label">Свет</span>';
   pochvaRow.innerHTML = '<span class="label">Почва</span>';
 
   collectTags('svet').forEach(function(tag) {
-    var btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.dataset.g = 'svet';
-    btn.dataset.v = tag;
-    btn.textContent = tag;
-    svetRow.appendChild(btn);
+    var button = document.createElement('button');
+
+    button.className = 'chip';
+    button.dataset.g = 'svet';
+    button.dataset.v = tag;
+    button.textContent = tag;
+
+    svetRow.appendChild(button);
   });
 
   collectTags('pochva').forEach(function(tag) {
-    var btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.dataset.g = 'pochva';
-    btn.dataset.v = tag;
-    btn.textContent = tag;
-    pochvaRow.appendChild(btn);
+    var button = document.createElement('button');
+
+    button.className = 'chip';
+    button.dataset.g = 'pochva';
+    button.dataset.v = tag;
+    button.textContent = tag;
+
+    pochvaRow.appendChild(button);
   });
 }
 
@@ -362,10 +487,10 @@ function startSite() {
 
   rebuildFilters();
 
-  [].slice.call(document.querySelectorAll('.chip')).forEach(function(b) {
-    b.onclick = function() {
-      vkl(akt[b.dataset.g], b.dataset.v);
-      b.classList.toggle('active');
+  [].slice.call(document.querySelectorAll('.chip')).forEach(function(button) {
+    button.onclick = function() {
+      toggleValue(akt[button.dataset.g], button.dataset.v);
+      button.classList.toggle('active');
       filtr();
     };
   });
@@ -374,10 +499,14 @@ function startSite() {
 
   reset.onclick = function() {
     search.value = '';
-    akt = { svet: [], pochva: [] };
 
-    [].slice.call(document.querySelectorAll('.chip.active')).forEach(function(c) {
-      c.classList.remove('active');
+    akt = {
+      svet: [],
+      pochva: []
+    };
+
+    [].slice.call(document.querySelectorAll('.chip.active')).forEach(function(chip) {
+      chip.classList.remove('active');
     });
 
     filtr();
@@ -386,34 +515,43 @@ function startSite() {
   filtr();
 }
 
-function vkl(arr, v) {
-  var i = arr.indexOf(v);
+function toggleValue(arr, value) {
+  var i = arr.indexOf(value);
 
   if (i < 0) {
-    arr.push(v);
+    arr.push(value);
   } else {
     arr.splice(i, 1);
   }
 }
 
-function vse_v(n, e) {
-  return n.every(function(v) {
-    return e.indexOf(v) >= 0;
+function hasAllTags(selectedTags, cardTags) {
+  return selectedTags.every(function(tag) {
+    return cardTags.indexOf(tag) >= 0;
   });
 }
 
 function filtr() {
-  var q = search.value.trim().toLowerCase();
+  var q = normalizeText(search.value);
   var n = 0;
 
-  cards.forEach(function(c) {
-    var okN = c.dataset.name.indexOf(q) >= 0;
-    var svet = c.dataset.svet ? c.dataset.svet.split('|') : [];
-    var pochva = c.dataset.pochva ? c.dataset.pochva.split('|') : [];
+  cards.forEach(function(card) {
+    var nameOk = card.dataset.name.indexOf(q) >= 0;
 
-    var show = okN && vse_v(akt.svet, svet) && vse_v(akt.pochva, pochva);
+    var svet = card.dataset.svet
+      ? card.dataset.svet.split('|')
+      : [];
 
-    c.style.display = show ? '' : 'none';
+    var pochva = card.dataset.pochva
+      ? card.dataset.pochva.split('|')
+      : [];
+
+    var show =
+      nameOk &&
+      hasAllTags(akt.svet, svet) &&
+      hasAllTags(akt.pochva, pochva);
+
+    card.style.display = show ? '' : 'none';
 
     if (show) {
       n++;
@@ -422,30 +560,34 @@ function filtr() {
 
   count.innerHTML = 'Найдено: <b>' + n + '</b> из ' + cards.length;
   empty.style.display = n ? 'none' : 'block';
-  reset.style.display = (q || akt.svet.length || akt.pochva.length) ? 'inline-block' : 'none';
+  reset.style.display = q || akt.svet.length || akt.pochva.length ? 'inline-block' : 'none';
 }
 
 var body = document.body;
-var tbtn = document.getElementById('theme');
+var themeButton = document.getElementById('theme');
 
-function setTheme(t) {
-  body.dataset.theme = t;
-  tbtn.textContent = t === 'dark' ? '☀️' : '🌙';
+function setTheme(theme) {
+  body.dataset.theme = theme;
+  themeButton.textContent = theme === 'dark' ? '☀️' : '🌙';
 
   try {
-    localStorage.setItem('theme', t);
+    localStorage.setItem('theme', theme);
   } catch (e) {}
 }
 
-tbtn.onclick = function() {
-  setTheme(body.dataset.theme === 'dark' ? 'light' : 'dark');
+themeButton.onclick = function() {
+  if (body.dataset.theme === 'dark') {
+    setTheme('light');
+  } else {
+    setTheme('dark');
+  }
 };
 
 try {
-  var sv = localStorage.getItem('theme');
+  var savedTheme = localStorage.getItem('theme');
 
-  if (sv) {
-    setTheme(sv);
+  if (savedTheme) {
+    setTheme(savedTheme);
   } else if (matchMedia('(prefers-color-scheme:dark)').matches) {
     setTheme('dark');
   }

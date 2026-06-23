@@ -618,40 +618,27 @@
       return false;
     }
 
-   function filterCards() {
-  var q = normalizeText(search.value);
-  var n = 0;
+    function filterCards() {
+      var q = normalizeText(search.value);
+      var n = 0;
 
-  cards.forEach(function(card) {
-    var nameOk = card.dataset.name.indexOf(q) >= 0;
-    var cardTags = card.dataset.tags ? card.dataset.tags.split('|') : [];
+      cards.forEach(function(card) {
+        var nameOk = card.dataset.name.indexOf(q) >= 0;
+        var cardTags = card.dataset.tags ? card.dataset.tags.split('|') : [];
 
-    var tagsOk = true;
+        var show = nameOk && hasAnySelectedTag(cardTags);
 
-    if (activeTags.length > 0) {
-      tagsOk = false;
+        card.style.display = show ? '' : 'none';
 
-      for (var i = 0; i < activeTags.length; i++) {
-        if (cardTags.indexOf(activeTags[i]) >= 0) {
-          tagsOk = true;
-          break;
+        if (show) {
+          n++;
         }
-      }
+      });
+
+      count.innerHTML = 'Найдено: <b>' + n + '</b> из ' + cards.length;
+      empty.style.display = n ? 'none' : 'block';
+      reset.style.display = q || activeTags.length ? 'inline-block' : 'none';
     }
-
-    var show = nameOk && tagsOk;
-
-    card.style.display = show ? '' : 'none';
-
-    if (show) {
-      n++;
-    }
-  });
-
-  count.innerHTML = 'Найдено: <b>' + n + '</b> из ' + cards.length;
-  empty.style.display = n ? 'none' : 'block';
-  reset.style.display = q || activeTags.length ? 'inline-block' : 'none';
-}
 
     function buildFilters(svetTags, pochvaTags) {
       svetTags = uniqueTags(svetTags).sort(function(a, b) {

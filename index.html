@@ -389,6 +389,163 @@ header .wrap{
     font-size:23px;
   }
 }
+/* ===== КОМПАКТНЫЕ ФИЛЬТРЫ ===== */
+
+/* Уменьшаем верхнюю часть */
+header .wrap{
+  padding-top:14px !important;
+  padding-bottom:14px !important;
+}
+
+.head-row{
+  margin-bottom:10px !important;
+}
+
+.eyebrow{
+  display:none !important;
+}
+
+.subtitle{
+  display:none !important;
+}
+
+.logo{
+  font-size:26px !important;
+  line-height:1.05 !important;
+}
+
+#search{
+  height:44px !important;
+  border-radius:13px !important;
+}
+
+/* Основная сетка */
+.main-layout{
+  grid-template-columns:320px 1fr !important;
+  gap:24px !important;
+  padding-top:18px !important;
+}
+
+/* Левая панель */
+.sidebar{
+  position:sticky !important;
+  top:132px !important;
+  height:calc(100vh - 150px) !important;
+}
+
+/* Внутри панели появляется свой скролл */
+.sidebar-inner{
+  height:100% !important;
+  overflow:auto !important;
+  padding:14px !important;
+  border-radius:18px !important;
+}
+
+/* Красивый тонкий скролл */
+.sidebar-inner::-webkit-scrollbar{
+  width:6px;
+}
+
+.sidebar-inner::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.sidebar-inner::-webkit-scrollbar-thumb{
+  background:var(--line);
+  border-radius:999px;
+}
+
+.sidebar-inner::-webkit-scrollbar-thumb:hover{
+  background:var(--muted);
+}
+
+.sidebar-title{
+  font-size:16px !important;
+  margin-bottom:12px !important;
+}
+
+/* Фильтры компактнее */
+.filters{
+  gap:18px !important;
+}
+
+.frow{
+  gap:6px !important;
+}
+
+/* Заголовки Свет / Почва */
+.frow .label{
+  font-size:10px !important;
+  margin-bottom:4px !important;
+}
+
+/* Кнопки фильтров */
+.chip{
+  padding:8px 10px !important;
+  border-radius:10px !important;
+  font-size:13px !important;
+  line-height:1.15 !important;
+  min-height:34px !important;
+}
+
+/* Свет оставляем одной колонкой */
+.frow:first-child{
+  display:grid !important;
+  grid-template-columns:1fr !important;
+}
+
+/* Почву делаем в 2 колонки */
+.frow:nth-child(2){
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:6px !important;
+}
+
+/* Надпись Почва должна быть на всю ширину */
+.frow:nth-child(2) .label{
+  grid-column:1 / -1 !important;
+}
+
+/* Карточки чуть ниже и компактнее */
+.card{
+  min-height:165px !important;
+  padding:18px !important;
+}
+
+.card h3{
+  font-size:16px !important;
+}
+
+.norma{
+  margin-bottom:12px !important;
+}
+
+.tag{
+  font-size:11.5px !important;
+  padding:5px 8px !important;
+}
+
+/* На маленьком экране возвращаем обычный вид */
+@media(max-width:900px){
+  .sidebar{
+    position:static !important;
+    height:auto !important;
+  }
+
+  .sidebar-inner{
+    height:auto !important;
+    overflow:visible !important;
+  }
+
+  .frow:nth-child(2){
+    display:flex !important;
+    flex-wrap:wrap !important;
+  }
+
+  .chip{
+    width:auto !important;
+  }
+}
 </style></head><body data-theme="light">
 <header><div class="wrap">
   <div class="head-row">

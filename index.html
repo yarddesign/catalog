@@ -342,7 +342,6 @@
     var body = document.body;
 
     var cards = [];
-
     var activeTags = [];
 
     var LIGHT_WORDS = [
@@ -580,13 +579,14 @@
 
     function makeFilterButton(row, tag) {
       var button = document.createElement('button');
+      var cleanTag = normalizeText(tag);
 
       button.className = 'chip';
-      button.dataset.v = normalizeText(tag);
+      button.dataset.v = cleanTag;
       button.textContent = tag;
 
       button.onclick = function() {
-        toggleTag(button.dataset.v);
+        toggleTag(cleanTag);
         button.classList.toggle('active');
         filterCards();
       };
@@ -604,14 +604,39 @@
       }
     }
 
-    function hasAnySelectedTag(cardTags) {
+    function tagMatches(selectedTag, cardTag) {
+      selectedTag = normalizeText(selectedTag);
+      cardTag = normalizeText(cardTag);
+
+      if (!selectedTag || !cardTag) {
+        return false;
+      }
+
+      if (selectedTag === cardTag) {
+        return true;
+      }
+
+      if (cardTag.indexOf(selectedTag) >= 0) {
+        return true;
+      }
+
+      if (selectedTag.indexOf(cardTag) >= 0) {
+        return true;
+      }
+
+      return false;
+    }
+
+    function cardHasAnySelectedTag(cardTags) {
       if (activeTags.length === 0) {
         return true;
       }
 
       for (var i = 0; i < activeTags.length; i++) {
-        if (cardTags.indexOf(activeTags[i]) >= 0) {
-          return true;
+        for (var j = 0; j < cardTags.length; j++) {
+          if (tagMatches(activeTags[i], cardTags[j])) {
+            return true;
+          }
         }
       }
 
@@ -625,8 +650,9 @@
       cards.forEach(function(card) {
         var nameOk = card.dataset.name.indexOf(q) >= 0;
         var cardTags = card.dataset.tags ? card.dataset.tags.split('|') : [];
+        var tagsOk = cardHasAnySelectedTag(cardTags);
 
-        var show = nameOk && hasAnySelectedTag(cardTags);
+        var show = nameOk && tagsOk;
 
         card.style.display = show ? '' : 'none';
 
@@ -641,6 +667,9 @@
     }
 
     function buildFilters(svetTags, pochvaTags) {
+      svetRow.innerHTML = '<span class="label">Свет</span>';
+      pochvaRow.innerHTML = '<span class="label">Почва</span>';
+
       svetTags = uniqueTags(svetTags).sort(function(a, b) {
         return a.localeCompare(b, 'ru');
       });
@@ -729,7 +758,6 @@
           cards = [].slice.call(document.querySelectorAll('.card'));
 
           buildFilters(allSvetTags, allPochvaTags);
-
           filterCards();
         })
         .catch(function(error) {

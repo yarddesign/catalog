@@ -107,25 +107,33 @@ function escapeHtml(text) {
     .replaceAll("'", '&#039;');
 }
 
-function splitTags(text) {
-  if (!text) return [];
-
-  return String(text)
-    .replaceAll('|', ';')
-    .split(';')
-    .map(function(x) {
-      return x.trim();
-    })
-    .filter(function(x) {
-      return x.length > 0;
-    });
-}
-
 function normalizeName(text) {
   return String(text || '')
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function normalizeTag(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function splitTags(text) {
+  if (!text) return [];
+
+  return String(text)
+    .replaceAll('|', ',')
+    .replaceAll(';', ',')
+    .split(',')
+    .map(function(x) {
+      return normalizeTag(x);
+    })
+    .filter(function(x) {
+      return x.length > 0;
+    });
 }
 
 function makeCard(name, norma, pochvaText, svetText) {
@@ -255,7 +263,8 @@ function loadNewCSV() {
       var existingNames = {};
 
       [].slice.call(document.querySelectorAll('.card')).forEach(function(card) {
-        existingNames[normalizeName(card.querySelector('h3') ? card.querySelector('h3').textContent : card.dataset.name)] = true;
+        var title = card.querySelector('h3') ? card.querySelector('h3').textContent : card.dataset.name;
+        existingNames[normalizeName(title)] = true;
       });
 
       rows.slice(1).forEach(function(row) {
@@ -285,8 +294,73 @@ function loadNewCSV() {
     });
 }
 
+function prepareOldCards() {
+  [].slice.call(document.querySelectorAll('.card')).forEach(function(card) {
+    card.dataset.name = normalizeName(card.dataset.name || card.textContent);
+
+    var svet = splitTags(card.dataset.svet || '');
+    var pochva = splitTags(card.dataset.pochva || '');
+
+    card.dataset.svet = svet.join('|');
+    card.dataset.pochva = pochva.join('|');
+  });
+}
+
+function collectTags(type) {
+  var result = {};
+
+  cards.forEach(function(card) {
+    var value = card.dataset[type] || '';
+    var arr = value ? value.split('|') : [];
+
+    arr.forEach(function(tag) {
+      tag = normalizeTag(tag);
+
+      if (tag) {
+        result[tag] = true;
+      }
+    });
+  });
+
+  return Object.keys(result).sort(function(a, b) {
+    return a.localeCompare(b, 'ru');
+  });
+}
+
+function rebuildFilters() {
+  var svetRow = document.querySelector('.chip[data-g="svet"]') ? document.querySelector('.chip[data-g="svet"]').parentElement : null;
+  var pochvaRow = document.querySelector('.chip[data-g="pochva"]') ? document.querySelector('.chip[data-g="pochva"]').parentElement : null;
+
+  if (!svetRow || !pochvaRow) return;
+
+  svetRow.innerHTML = '<span class="label">Свет</span>';
+  pochvaRow.innerHTML = '<span class="label">Почва</span>';
+
+  collectTags('svet').forEach(function(tag) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.dataset.g = 'svet';
+    btn.dataset.v = tag;
+    btn.textContent = tag;
+    svetRow.appendChild(btn);
+  });
+
+  collectTags('pochva').forEach(function(tag) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.dataset.g = 'pochva';
+    btn.dataset.v = tag;
+    btn.textContent = tag;
+    pochvaRow.appendChild(btn);
+  });
+}
+
 function startSite() {
+  prepareOldCards();
+
   cards = [].slice.call(document.querySelectorAll('.card'));
+
+  rebuildFilters();
 
   [].slice.call(document.querySelectorAll('.chip')).forEach(function(b) {
     b.onclick = function() {

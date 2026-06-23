@@ -86,42 +86,298 @@ header{position:sticky;top:0;z-index:20;background:var(--bg);
   </div>
 </div>
 <script>
-var cards=[].slice.call(document.querySelectorAll('.card'));
-var empty=document.getElementById('empty');
-var count=document.getElementById('count');
-var reset=document.getElementById('reset');
-var search=document.getElementById('search');
-var akt={svet:[],pochva:[]};
-function vkl(arr,v){var i=arr.indexOf(v);if(i<0)arr.push(v);else arr.splice(i,1);}
-[].slice.call(document.querySelectorAll('.chip')).forEach(function(b){
-  b.onclick=function(){vkl(akt[b.dataset.g],b.dataset.v);b.classList.toggle('active');filtr();};
-});
-search.oninput=filtr;
-reset.onclick=function(){
-  search.value='';akt={svet:[],pochva:[]};
-  [].slice.call(document.querySelectorAll('.chip.active')).forEach(function(c){c.classList.remove('active');});
-  filtr();
-};
-function vse_v(n,e){return n.every(function(v){return e.indexOf(v)>=0;});}
-function filtr(){
-  var q=search.value.trim().toLowerCase();var n=0;
-  cards.forEach(function(c){
-    var okN=c.dataset.name.indexOf(q)>=0;
-    var svet=c.dataset.svet?c.dataset.svet.split('|'):[];
-    var pochva=c.dataset.pochva?c.dataset.pochva.split('|'):[];
-    var show=okN && vse_v(akt.svet,svet) && vse_v(akt.pochva,pochva);
-    c.style.display=show?'':'none';if(show)n++;
-  });
-  count.innerHTML='Найдено: <b>'+n+'</b> из '+cards.length;
-  empty.style.display=n?'none':'block';
-  reset.style.display=(q||akt.svet.length||akt.pochva.length)?'inline-block':'none';
+var grid = document.getElementById('grid');
+var empty = document.getElementById('empty');
+var count = document.getElementById('count');
+var reset = document.getElementById('reset');
+var search = document.getElementById('search');
+var akt = { svet: [], pochva: [] };
+var cards = [];
+
+function cleanText(text) {
+  return String(text || '').trim();
 }
-var body=document.body,tbtn=document.getElementById('theme');
-function setTheme(t){body.dataset.theme=t;tbtn.textContent=t==='dark'?'☀️':'🌙';
-  try{localStorage.setItem('theme',t)}catch(e){}}
-tbtn.onclick=function(){setTheme(body.dataset.theme==='dark'?'light':'dark');};
-try{var sv=localStorage.getItem('theme');
-  if(sv)setTheme(sv);
-  else if(matchMedia('(prefers-color-scheme:dark)').matches)setTheme('dark');}catch(e){}
-filtr();
-</script></body></html>
+
+function escapeHtml(text) {
+  return String(text || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function splitTags(text) {
+  if (!text) return [];
+
+  return String(text)
+    .replaceAll('|', ';')
+    .split(';')
+    .map(function(x) {
+      return x.trim();
+    })
+    .filter(function(x) {
+      return x.length > 0;
+    });
+}
+
+function normalizeName(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function makeCard(name, norma, pochvaText, svetText) {
+  var svet = splitTags(svetText);
+  var pochva = splitTags(pochvaText);
+
+  var tags = '';
+
+  svet.forEach(function(t) {
+    tags += '<span class="tag s">' + escapeHtml(t) + '</span>';
+  });
+
+  pochva.forEach(function(t) {
+    tags += '<span class="tag p">' + escapeHtml(t) + '</span>';
+  });
+
+  var article = document.createElement('article');
+  article.className = 'card';
+  article.dataset.name = normalizeName(name);
+  article.dataset.svet = svet.join('|');
+  article.dataset.pochva = pochva.join('|');
+
+  article.innerHTML =
+    '<h3>' + escapeHtml(name) + '</h3>' +
+    '<div class="norma">' + escapeHtml(norma || '—') + ' шт/м²</div>' +
+    '<div class="tags">' + tags + '</div>';
+
+  return article;
+}
+
+function detectSeparator(line) {
+  var commaCount = (line.match(/,/g) || []).length;
+  var semicolonCount = (line.match(/;/g) || []).length;
+
+  if (semicolonCount > commaCount) {
+    return ';';
+  }
+
+  return ',';
+}
+
+function parseCSV(text) {
+  text = String(text || '').replace(/^\uFEFF/, '');
+
+  var firstLine = text.split(/\r?\n/)[0] || '';
+  var separator = detectSeparator(firstLine);
+
+  var rows = [];
+  var row = [];
+  var cell = '';
+  var insideQuotes = false;
+
+  for (var i = 0; i < text.length; i++) {
+    var char = text[i];
+    var next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      cell += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === separator && !insideQuotes) {
+      row.push(cell);
+      cell = '';
+    } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+      if (cell || row.length) {
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = '';
+      }
+
+      if (char === '\r' && next === '\n') {
+        i++;
+      }
+    } else {
+      cell += char;
+    }
+  }
+
+  if (cell || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function findColumn(headers, possibleNames, defaultIndex) {
+  for (var i = 0; i < headers.length; i++) {
+    var h = normalizeName(headers[i]);
+
+    for (var j = 0; j < possibleNames.length; j++) {
+      if (h.indexOf(possibleNames[j]) >= 0) {
+        return i;
+      }
+    }
+  }
+
+  return defaultIndex;
+}
+
+function loadNewCSV() {
+  fetch('new.csv?v=' + Date.now())
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Файл new.csv не найден');
+      }
+
+      return response.text();
+    })
+    .then(function(text) {
+      var rows = parseCSV(text);
+
+      if (!rows.length) {
+        startSite();
+        return;
+      }
+
+      var headers = rows[0];
+
+      var nameCol = findColumn(headers, ['название', 'растение', 'name'], 0);
+      var normaCol = findColumn(headers, ['норма', 'посадки', 'шт'], 1);
+      var pochvaCol = findColumn(headers, ['почва', 'почвы'], 2);
+      var svetCol = findColumn(headers, ['свет', 'освещение'], 3);
+
+      var existingNames = {};
+
+      [].slice.call(document.querySelectorAll('.card')).forEach(function(card) {
+        existingNames[normalizeName(card.querySelector('h3') ? card.querySelector('h3').textContent : card.dataset.name)] = true;
+      });
+
+      rows.slice(1).forEach(function(row) {
+        var name = cleanText(row[nameCol]);
+        var norma = cleanText(row[normaCol]);
+        var pochva = cleanText(row[pochvaCol]);
+        var svet = cleanText(row[svetCol]);
+
+        if (!name) return;
+
+        var key = normalizeName(name);
+
+        if (existingNames[key]) {
+          return;
+        }
+
+        existingNames[key] = true;
+
+        var card = makeCard(name, norma, pochva, svet);
+        grid.appendChild(card);
+      });
+
+      startSite();
+    })
+    .catch(function() {
+      startSite();
+    });
+}
+
+function startSite() {
+  cards = [].slice.call(document.querySelectorAll('.card'));
+
+  [].slice.call(document.querySelectorAll('.chip')).forEach(function(b) {
+    b.onclick = function() {
+      vkl(akt[b.dataset.g], b.dataset.v);
+      b.classList.toggle('active');
+      filtr();
+    };
+  });
+
+  search.oninput = filtr;
+
+  reset.onclick = function() {
+    search.value = '';
+    akt = { svet: [], pochva: [] };
+
+    [].slice.call(document.querySelectorAll('.chip.active')).forEach(function(c) {
+      c.classList.remove('active');
+    });
+
+    filtr();
+  };
+
+  filtr();
+}
+
+function vkl(arr, v) {
+  var i = arr.indexOf(v);
+
+  if (i < 0) {
+    arr.push(v);
+  } else {
+    arr.splice(i, 1);
+  }
+}
+
+function vse_v(n, e) {
+  return n.every(function(v) {
+    return e.indexOf(v) >= 0;
+  });
+}
+
+function filtr() {
+  var q = search.value.trim().toLowerCase();
+  var n = 0;
+
+  cards.forEach(function(c) {
+    var okN = c.dataset.name.indexOf(q) >= 0;
+    var svet = c.dataset.svet ? c.dataset.svet.split('|') : [];
+    var pochva = c.dataset.pochva ? c.dataset.pochva.split('|') : [];
+
+    var show = okN && vse_v(akt.svet, svet) && vse_v(akt.pochva, pochva);
+
+    c.style.display = show ? '' : 'none';
+
+    if (show) {
+      n++;
+    }
+  });
+
+  count.innerHTML = 'Найдено: <b>' + n + '</b> из ' + cards.length;
+  empty.style.display = n ? 'none' : 'block';
+  reset.style.display = (q || akt.svet.length || akt.pochva.length) ? 'inline-block' : 'none';
+}
+
+var body = document.body;
+var tbtn = document.getElementById('theme');
+
+function setTheme(t) {
+  body.dataset.theme = t;
+  tbtn.textContent = t === 'dark' ? '☀️' : '🌙';
+
+  try {
+    localStorage.setItem('theme', t);
+  } catch (e) {}
+}
+
+tbtn.onclick = function() {
+  setTheme(body.dataset.theme === 'dark' ? 'light' : 'dark');
+};
+
+try {
+  var sv = localStorage.getItem('theme');
+
+  if (sv) {
+    setTheme(sv);
+  } else if (matchMedia('(prefers-color-scheme:dark)').matches) {
+    setTheme('dark');
+  }
+} catch (e) {}
+
+loadNewCSV();
+</script>
+</body>
+</html>

@@ -45,6 +45,31 @@ header{position:sticky;top:0;z-index:20;background:var(--bg);
 #reset{border:none;background:transparent;color:var(--brand);font-weight:500;
   cursor:pointer;font-size:13px;padding:4px 8px;border-radius:7px;display:none}
 #reset:hover{background:var(--brand-soft)}
+  .bar-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+#mode{
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--ink);
+  font-size:13px;
+  padding:6px 10px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+#mode:hover{
+  border-color:var(--brand);
+}
+
+#mode.active{
+  background:var(--brand);
+  border-color:var(--brand);
+  color:#fff;
+}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
   gap:12px;padding:8px 0 70px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;

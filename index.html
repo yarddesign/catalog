@@ -982,6 +982,51 @@
     }
   } catch (e) {}
 
+  function forceNormalSidebarFilters() {
+  var sidebar = document.querySelector('.sidebar');
+  var sidebarInner = document.querySelector('.sidebar-inner');
+  var rows = document.querySelectorAll('.frow');
+  var chips = document.querySelectorAll('.chip');
+
+  if (sidebar) {
+    sidebar.style.position = 'sticky';
+    sidebar.style.top = '146px';
+  }
+
+  if (sidebarInner) {
+    sidebarInner.style.overflowY = 'auto';
+    sidebarInner.style.overflowX = 'hidden';
+    sidebarInner.style.maxHeight = 'calc(100vh - 170px)';
+  }
+
+  rows.forEach(function(row) {
+    row.style.display = 'flex';
+    row.style.flexDirection = 'column';
+    row.style.flexWrap = 'nowrap';
+    row.style.gap = '8px';
+  });
+
+  chips.forEach(function(chip) {
+    chip.style.width = '100%';
+    chip.style.display = 'block';
+    chip.style.textAlign = 'left';
+    chip.style.borderRadius = '12px';
+    chip.style.padding = '10px 12px';
+    chip.style.fontSize = '14px';
+    chip.style.lineHeight = '1.2';
+    chip.style.whiteSpace = 'normal';
+  });
+}
+
+var oldRebuildFilters = rebuildFilters;
+
+rebuildFilters = function() {
+  oldRebuildFilters();
+  forceNormalSidebarFilters();
+};
+
+window.addEventListener('resize', forceNormalSidebarFilters);
+
   loadNewCSV();
 </script>
 

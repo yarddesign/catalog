@@ -1,624 +1,419 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Каталог растений</title>
-<style>
-:root{
-  --bg:#f5f6f2;
-  --panel:#ffffff;
-  --ink:#17211b;
-  --muted:#8a948d;
-  --brand:#3f7d54;
-  --brand-soft:#edf6ef;
-  --line:#e3e9e3;
-  --sun:#8a6518;
-  --sun-bg:#fff3d3;
-  --soil:#2f6b3a;
-  --soil-bg:#eaf7ee;
-}
-
-body[data-theme="dark"]{
-  --bg:#0f1511;
-  --panel:#151c17;
-  --ink:#e9f0eb;
-  --muted:#859188;
-  --brand:#7bc18e;
-  --brand-soft:#1d2b21;
-  --line:#28322b;
-  --sun:#e8c878;
-  --sun-bg:#302714;
-  --soil:#9ed9ad;
-  --soil-bg:#172519;
-}
-
-*{
-  box-sizing:border-box;
-}
-
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-  font-size:15px;
-}
-
-.wrap{
-  max-width:1380px;
-  margin:0 auto;
-  padding:0 28px;
-}
-
-/* Верх */
-header{
-  position:sticky;
-  top:0;
-  z-index:50;
-  background:rgba(245,246,242,.9);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-}
-
-body[data-theme="dark"] header{
-  background:rgba(15,21,17,.9);
-}
-
-header .wrap{
-  padding-top:16px;
-  padding-bottom:16px;
-}
-
-.head-row{
-  display:flex;
-  align-items:center;
-  gap:16px;
-  margin-bottom:12px;
-}
-
-.brand{
-  flex:1;
-  min-width:0;
-}
-
-.eyebrow{
-  display:none;
-}
-
-.logo{
-  margin:0;
-  font-size:28px;
-  line-height:1.1;
-  font-weight:800;
-  letter-spacing:-.7px;
-}
-
-.subtitle{
-  display:none;
-}
-
-.theme-btn{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:var(--panel);
-  color:var(--ink);
-  font-size:17px;
-  cursor:pointer;
-}
-
-/* Поиск */
-.searchbar{
-  position:relative;
-}
-
-.searchbar .ico{
-  position:absolute;
-  left:16px;
-  top:50%;
-  transform:translateY(-50%);
-  opacity:.45;
-  pointer-events:none;
-}
-
-#search{
-  width:100%;
-  height:48px;
-  padding:0 16px 0 46px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:var(--panel);
-  color:var(--ink);
-  font-size:15px;
-  outline:none;
-}
-
-#search:focus{
-  border-color:var(--brand);
-}
-
-/* Главная раскладка */
-.main-layout{
-  display:grid;
-  grid-template-columns:300px 1fr;
-  gap:24px;
-  align-items:start;
-  padding-top:24px;
-}
-
-/* Левая панель */
-.sidebar{
-  position:sticky;
-  top:146px;
-}
-
-.sidebar-inner{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:18px;
-}
-
-.sidebar-title{
-  font-size:18px;
-  font-weight:800;
-  margin-bottom:18px;
-}
-
-/* Фильтры */
-.filters{
-  display:flex;
-  flex-direction:column;
-  gap:22px;
-}
-
-.frow{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.frow .label{
-  color:var(--muted);
-  font-size:11px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:.8px;
-  margin-bottom:2px;
-}
-
-.chip{
-  width:100%;
-  text-align:left;
-  border:1px solid var(--line);
-  background:transparent;
-  color:var(--ink);
-  border-radius:12px;
-  padding:10px 12px;
-  font-size:14px;
-  cursor:pointer;
-  transition:.15s;
-}
-
-.chip:hover{
-  background:var(--brand-soft);
-  color:var(--brand);
-}
-
-.chip.active{
-  background:var(--brand);
-  border-color:var(--brand);
-  color:#fff;
-}
-
-/* Правая часть */
-.content{
-  min-width:0;
-}
-
-.bar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:18px;
-}
-
-#count{
-  color:var(--muted);
-  font-size:15px;
-}
-
-#count b{
-  color:var(--ink);
-}
-
-.bar-actions{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
-
-#mode,
-#reset{
-  border:1px solid var(--line);
-  background:var(--panel);
-  color:var(--ink);
-  border-radius:12px;
-  padding:10px 14px;
-  font-size:14px;
-  cursor:pointer;
-}
-
-#mode.active{
-  background:var(--brand);
-  border-color:var(--brand);
-  color:#fff;
-}
-
-#reset{
-  display:none;
-  color:var(--brand);
-}
-
-/* Карточки */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:16px;
-  padding-bottom:80px;
-}
-
-.card{
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:20px;
-  min-height:178px;
-  transition:.15s;
-}
-
-.card:hover{
-  transform:translateY(-2px);
-  border-color:var(--brand);
-}
-
-.card h3{
-  margin:0 0 10px;
-  font-size:17px;
-  line-height:1.28;
-  font-weight:800;
-  letter-spacing:-.3px;
-}
-
-.norma{
-  color:var(--muted);
-  font-size:14px;
-  font-weight:600;
-  margin-bottom:16px;
-}
-
-.tags{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
-}
-
-.tag{
-  display:inline-flex;
-  border-radius:999px;
-  padding:6px 9px;
-  font-size:12px;
-  font-weight:700;
-  line-height:1;
-}
-
-.tag.s{
-  background:var(--sun-bg);
-  color:var(--sun);
-}
-
-.tag.p{
-  background:var(--soil-bg);
-  color:var(--soil);
-}
-
-.empty{
-  display:none;
-  text-align:center;
-  padding:70px 20px;
-  color:var(--muted);
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:18px;
-}
-
-.empty .big{
-  font-size:42px;
-  margin-bottom:10px;
-}
-
-/* Телефон */
-@media(max-width:900px){
-  .wrap{
-    padding:0 16px;
-  }
-
-  .main-layout{
-    display:block;
-    padding-top:16px;
-  }
-
-  .sidebar{
-    position:static;
-    margin-bottom:18px;
-  }
-
-  .filters{
-    gap:18px;
-  }
-
-  .frow{
-    flex-direction:row;
-    flex-wrap:wrap;
-  }
-
-  .frow .label{
-    width:100%;
-  }
-
-  .chip{
-    width:auto;
-  }
-
-  .bar{
-    align-items:flex-start;
-    flex-direction:column;
-  }
-
-  .bar-actions{
-    width:100%;
-    justify-content:space-between;
-  }
-
-  .grid{
-    grid-template-columns:1fr;
-  }
-
-  .logo{
-    font-size:23px;
-  }
-}
-
-/* ===== НОРМАЛЬНЫЕ КОМПАКТНЫЕ ФИЛЬТРЫ ===== */
-
-/* Верх делаем ниже */
-header .wrap{
-  padding-top:14px !important;
-  padding-bottom:14px !important;
-}
-
-.head-row{
-  margin-bottom:12px !important;
-}
-
-.logo{
-  font-size:28px !important;
-}
-
-#search{
-  height:46px !important;
-}
-
-/* Основная сетка */
-.main-layout{
-  grid-template-columns:300px 1fr !important;
-  gap:26px !important;
-  padding-top:22px !important;
-}
-
-/* Левая колонка */
-.sidebar{
-  position:sticky !important;
-  top:128px !important;
-
-  /* важно: задаём реальную высоту */
-  height:calc(100vh - 150px) !important;
-  max-height:calc(100vh - 150px) !important;
-
-  overflow:hidden !important;
-}
-
-/* Белый блок фильтров */
-.sidebar-inner{
-  height:100% !important;
-  max-height:100% !important;
-
-  overflow-y:auto !important;
-  overflow-x:hidden !important;
-
-  padding:18px !important;
-  border-radius:18px !important;
-}
-
-/* Чтобы было понятно, что панель скроллится */
-.sidebar-inner::-webkit-scrollbar{
-  width:8px !important;
-}
-
-.sidebar-inner::-webkit-scrollbar-track{
-  background:#eef2ec !important;
-  border-radius:999px !important;
-}
-
-.sidebar-inner::-webkit-scrollbar-thumb{
-  background:#b9c4bb !important;
-  border-radius:999px !important;
-}
-
-.sidebar-inner::-webkit-scrollbar-thumb:hover{
-  background:#8f9b92 !important;
-}
-
-.sidebar-title{
-  font-size:20px !important;
-  margin-bottom:18px !important;
-}
-
-/* Общий блок фильтров */
-.filters{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:20px !important;
-}
-
-/* Каждая группа: Свет / Почва */
-.frow{
-  display:flex !important;
-  flex-direction:row !important;
-  flex-wrap:wrap !important;
-  align-items:flex-start !important;
-  gap:8px !important;
-}
-
-/* Заголовки Свет / Почва */
-.frow .label{
-  width:100% !important;
-  flex:0 0 100% !important;
-
-  position:static !important;
-  margin:0 0 2px 0 !important;
-  padding:0 !important;
-
-  background:transparent !important;
-  color:var(--muted) !important;
-
-  font-size:11px !important;
-  line-height:1 !important;
-  font-weight:800 !important;
-  text-transform:uppercase !important;
-  letter-spacing:.8px !important;
-}
-
-/* Кнопки фильтров — теперь маленькие, не на всю ширину */
-.chip{
-  width:auto !important;
-  min-width:0 !important;
-
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-
-  padding:7px 10px !important;
-  min-height:30px !important;
-
-  border-radius:999px !important;
-  font-size:13px !important;
-  line-height:1 !important;
-
-  text-align:center !important;
-  white-space:normal !important;
-
-  background:var(--panel) !important;
-  border:1px solid var(--line) !important;
-  color:var(--ink) !important;
-
-  box-shadow:none !important;
-}
-
-/* Почва ещё компактнее */
-.frow:nth-child(2) .chip{
-  font-size:12.5px !important;
-  padding:7px 9px !important;
-}
-
-/* Активная кнопка */
-.chip.active{
-  background:var(--brand) !important;
-  border-color:var(--brand) !important;
-  color:#fff !important;
-}
-
-/* Наведение */
-.chip:hover{
-  transform:none !important;
-  background:var(--brand-soft) !important;
-  color:var(--brand) !important;
-}
-
-/* Правая часть */
-.bar{
-  margin-bottom:18px !important;
-}
-
-/* Карточки делаем плотнее */
-.grid{
-  grid-template-columns:repeat(auto-fill,minmax(240px,1fr)) !important;
-  gap:14px !important;
-}
-
-.card{
-  min-height:160px !important;
-  padding:18px !important;
-  border-radius:18px !important;
-}
-
-.card h3{
-  font-size:16px !important;
-  line-height:1.25 !important;
-}
-
-.norma{
-  font-size:13px !important;
-  margin-bottom:12px !important;
-}
-
-.tag{
-  font-size:11.5px !important;
-  padding:5px 8px !important;
-}
-
-/* На телефоне */
-@media(max-width:900px){
-  .main-layout{
-    display:block !important;
-  }
-
-  .sidebar{
-    position:static !important;
-    height:auto !important;
-    max-height:none !important;
-    overflow:visible !important;
-    margin-bottom:18px !important;
-  }
-
-  .sidebar-inner{
-    height:auto !important;
-    max-height:none !important;
-    overflow:visible !important;
-  }
-
-  .grid{
-    grid-template-columns:1fr !important;
-  }
-}
-</style></head><body data-theme="light">
-<header><div class="wrap">
-  <div class="head-row">
-  <div class="brand">
-    <div class="eyebrow">Подбор растений</div>
-    <h1 class="logo">Каталог декоративных злаков</h1>
-    <p class="subtitle">Фильтруй растения по свету, почве и режиму отбора</p>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Каталог растений</title>
+
+  <style>
+    :root{
+      --bg:#f5f6f2;
+      --panel:#ffffff;
+      --ink:#17211b;
+      --muted:#8a948d;
+      --brand:#3f7d54;
+      --brand-soft:#edf6ef;
+      --line:#e3e9e3;
+      --sun:#8a6518;
+      --sun-bg:#fff3d3;
+      --soil:#2f6b3a;
+      --soil-bg:#eaf7ee;
+    }
+
+    body[data-theme="dark"]{
+      --bg:#0f1511;
+      --panel:#151c17;
+      --ink:#e9f0eb;
+      --muted:#859188;
+      --brand:#7bc18e;
+      --brand-soft:#1d2b21;
+      --line:#28322b;
+      --sun:#e8c878;
+      --sun-bg:#302714;
+      --soil:#9ed9ad;
+      --soil-bg:#172519;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+      font-size:15px;
+    }
+
+    .wrap{
+      max-width:1380px;
+      margin:0 auto;
+      padding:0 28px;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:rgba(245,246,242,.9);
+      border-bottom:1px solid var(--line);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+    }
+
+    body[data-theme="dark"] header{
+      background:rgba(15,21,17,.9);
+    }
+
+    header .wrap{
+      padding-top:16px;
+      padding-bottom:16px;
+    }
+
+    .head-row{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-bottom:12px;
+    }
+
+    .brand{
+      flex:1;
+      min-width:0;
+    }
+
+    .eyebrow,
+    .subtitle{
+      display:none;
+    }
+
+    .logo{
+      margin:0;
+      font-size:28px;
+      line-height:1.1;
+      font-weight:800;
+      letter-spacing:-.7px;
+    }
+
+    .theme-btn{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--ink);
+      font-size:17px;
+      cursor:pointer;
+    }
+
+    .searchbar{
+      position:relative;
+    }
+
+    .searchbar .ico{
+      position:absolute;
+      left:16px;
+      top:50%;
+      transform:translateY(-50%);
+      opacity:.45;
+      pointer-events:none;
+    }
+
+    #search{
+      width:100%;
+      height:48px;
+      padding:0 16px 0 46px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--panel);
+      color:var(--ink);
+      font-size:15px;
+      outline:none;
+    }
+
+    #search:focus{
+      border-color:var(--brand);
+    }
+
+    .main-layout{
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:24px;
+      align-items:start;
+      padding-top:24px;
+    }
+
+    .sidebar{
+      position:sticky;
+      top:146px;
+    }
+
+    .sidebar-inner{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+
+      max-height:calc(100vh - 170px);
+      overflow-y:auto;
+    }
+
+    .sidebar-title{
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:18px;
+    }
+
+    .filters{
+      display:flex;
+      flex-direction:column;
+      gap:22px;
+    }
+
+    .frow{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .frow .label{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+      margin-bottom:2px;
+    }
+
+    .chip{
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      background:transparent;
+      color:var(--ink);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      cursor:pointer;
+      transition:.15s;
+    }
+
+    .chip:hover{
+      background:var(--brand-soft);
+      color:var(--brand);
+    }
+
+    .chip.active{
+      background:var(--brand);
+      border-color:var(--brand);
+      color:#fff;
+    }
+
+    .content{
+      min-width:0;
+    }
+
+    .bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    #count{
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    #count b{
+      color:var(--ink);
+    }
+
+    .bar-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    #mode,
+    #reset{
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--ink);
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:14px;
+      cursor:pointer;
+    }
+
+    #mode.active{
+      background:var(--brand);
+      border-color:var(--brand);
+      color:#fff;
+    }
+
+    #reset{
+      display:none;
+      color:var(--brand);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+      gap:16px;
+      padding-bottom:80px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:20px;
+      min-height:178px;
+      transition:.15s;
+    }
+
+    .card:hover{
+      transform:translateY(-2px);
+      border-color:var(--brand);
+    }
+
+    .card h3{
+      margin:0 0 10px;
+      font-size:17px;
+      line-height:1.28;
+      font-weight:800;
+      letter-spacing:-.3px;
+    }
+
+    .norma{
+      color:var(--muted);
+      font-size:14px;
+      font-weight:600;
+      margin-bottom:16px;
+    }
+
+    .tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+    }
+
+    .tag{
+      display:inline-flex;
+      border-radius:999px;
+      padding:6px 9px;
+      font-size:12px;
+      font-weight:700;
+      line-height:1;
+    }
+
+    .tag.s{
+      background:var(--sun-bg);
+      color:var(--sun);
+    }
+
+    .tag.p{
+      background:var(--soil-bg);
+      color:var(--soil);
+    }
+
+    .empty{
+      display:none;
+      text-align:center;
+      padding:70px 20px;
+      color:var(--muted);
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+    }
+
+    .empty .big{
+      font-size:42px;
+      margin-bottom:10px;
+    }
+
+    @media(max-width:900px){
+      .wrap{
+        padding:0 16px;
+      }
+
+      .main-layout{
+        display:block;
+        padding-top:16px;
+      }
+
+      .sidebar{
+        position:static;
+        margin-bottom:18px;
+      }
+
+      .sidebar-inner{
+        max-height:none;
+        overflow:visible;
+      }
+
+      .filters{
+        gap:18px;
+      }
+
+      .frow{
+        flex-direction:row;
+        flex-wrap:wrap;
+      }
+
+      .frow .label{
+        width:100%;
+      }
+
+      .chip{
+        width:auto;
+      }
+
+      .bar{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .bar-actions{
+        width:100%;
+        justify-content:space-between;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .logo{
+        font-size:23px;
+      }
+    }
+  </style>
+</head>
+
+<body data-theme="light">
+
+<header>
+  <div class="wrap">
+    <div class="head-row">
+      <div class="brand">
+        <div class="eyebrow">Подбор растений</div>
+        <h1 class="logo">Каталог декоративных злаков</h1>
+        <p class="subtitle">Фильтруй растения по свету, почве и режиму отбора</p>
+      </div>
+
+      <button class="theme-btn" id="theme" title="Сменить тему">🌙</button>
+    </div>
+
+    <div class="searchbar">
+      <span class="ico">🔍</span>
+      <input id="search" placeholder="Поиск по названию...">
+    </div>
   </div>
+</header>
 
-  <button class="theme-btn" id="theme" title="Сменить тему">🌙</button>
-</div>
-  <div class="searchbar">
-    <span class="ico">🔍</span>
-    <input id="search" placeholder="Поиск по названию...">
-  </div>
-  
-</div></header>
 <div class="wrap main-layout">
 
   <aside class="sidebar">
@@ -626,580 +421,569 @@ header .wrap{
       <div class="sidebar-title">Фильтры</div>
 
       <div class="filters">
-        <div class="frow">
+        <div class="frow" id="svetFilters">
           <span class="label">Свет</span>
-          <button class="chip" data-g="svet" data-v="полутень">полутень</button>
-          <button class="chip" data-g="svet" data-v="солнце">солнце</button>
-          <button class="chip" data-g="svet" data-v="теневынослива">теневынослива</button>
-          <button class="chip" data-g="svet" data-v="тень">тень</button>
         </div>
 
-        <div class="frow">
+        <div class="frow" id="pochvaFilters">
           <span class="label">Почва</span>
-          <button class="chip" data-g="pochva" data-v="бедные почвы">бедные почвы</button>
-          <button class="chip" data-g="pochva" data-v="влажные почвы">влажные почвы</button>
-          <button class="chip" data-g="pochva" data-v="выдерживает засуху">выдерживает засуху</button>
-          <button class="chip" data-g="pochva" data-v="глинистые почвы">глинистые почвы</button>
-          <button class="chip" data-g="pochva" data-v="дренированные почвы">дренированные почвы</button>
-          <button class="chip" data-g="pochva" data-v="засухоустойчива">засухоустойчива</button>
-          <button class="chip" data-g="pochva" data-v="к почвам нетребовательна">к почвам нетребовательна</button>
-          <button class="chip" data-g="pochva" data-v="кислые почвы">кислые почвы</button>
-          <button class="chip" data-g="pochva" data-v="песчаные почвы">песчаные почвы</button>
-          <button class="chip" data-g="pochva" data-v="плодородные почвы">плодородные почвы</button>
-          <button class="chip" data-g="pochva" data-v="суглинистые почвы">суглинистые почвы</button>
-          <button class="chip" data-g="pochva" data-v="сухие почвы">сухие почвы</button>
-          <button class="chip" data-g="pochva" data-v="умеренно влажные">умеренно влажные</button>
         </div>
       </div>
     </div>
   </aside>
 
   <main class="content">
-    <div class="bar">    
-  <div id="count"></div>
+    <div class="bar">
+      <div id="count">Загрузка...</div>
 
-  <div class="bar-actions">
-    <button id="mode">Режим: ИЛИ</button>
-    <button id="reset">Сбросить &times;</button>
-  </div>
-</div>
-  <div class="grid" id="grid"><article class="card" data-name="бородач жерара (andropogon gerardii)" data-svet="солнце" data-pochva=""><h3>Бородач Жерара (Andropogon gerardii)</h3><div class="norma">5 -  7 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="булавоносец седоватый &quot;спайки блю&quot; (corynephorus canescens ‘spiky blue’)" data-svet="солнце" data-pochva="бедные почвы|песчаные почвы|дренированные почвы"><h3>Булавоносец седоватый &quot;Спайки Блю&quot; (Corynephorus canescens ‘Spiky Blue’)</h3><div class="norma">11 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">бедные почвы</span><span class="tag p">песчаные почвы</span><span class="tag p">дренированные почвы</span></div></article><article class="card" data-name="бутелуа боковая  (bouteloua curtipendula)" data-svet="солнце" data-pochva="песчаные почвы|суглинистые почвы|глинистые почвы"><h3>Бутелуа боковая  (Bouteloua curtipendula)</h3><div class="norma">7 - 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">песчаные почвы</span><span class="tag p">суглинистые почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="бутелуа изящная (bouteloua aristidoides)" data-svet="солнце" data-pochva="засухоустойчива|бедные почвы"><h3>Бутелуа изящная (Bouteloua aristidoides)</h3><div class="norma">5 -  7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">засухоустойчива</span><span class="tag p">бедные почвы</span></div></article><article class="card" data-name="веероцветник (мискантус) &quot;гигантеус&quot; (miscanthus x giganteus)" data-svet="" data-pochva="плодородные почвы"><h3>Веероцветник (Мискантус) &quot;Гигантеус&quot; (Miscanthus x giganteus)</h3><div class="norma">1 -  3 шт/м²</div><div class="tags"><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="веероцветник (мискантус) китайский &quot;зильберфедер&quot; (miscanthus sinensis ‘silberfeder’)" data-svet="" data-pochva="плодородные почвы"><h3>Веероцветник (Мискантус) китайский &quot;Зильберфедер&quot; (Miscanthus sinensis ‘Silberfeder’)</h3><div class="norma">1 шт/м²</div><div class="tags"><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="веероцветник (мискантус) краснеющий (miscanthus purpurascens)" data-svet="" data-pochva=""><h3>Веероцветник (Мискантус) краснеющий (Miscanthus purpurascens)</h3><div class="norma">2 - 3 шт/м²</div><div class="tags"></div></article><article class="card" data-name="веероцветник (мискантус) сахароцветный (miscanthus sacchariflorus)" data-svet="солнце" data-pochva="плодородные почвы"><h3>Веероцветник (Мискантус) сахароцветный (Miscanthus sacchariflorus)</h3><div class="norma">1 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="вейник короткохохолковый (коротковолосковый)  (calamagrostis brachytricha)" data-svet="" data-pochva=""><h3>Вейник короткохохолковый (коротковолосковый)  (Calamagrostis brachytricha)</h3><div class="norma">4 шт/м²</div><div class="tags"></div></article><article class="card" data-name="вейник остроцветковый (острочешуйный) &quot;карл форстер&quot;  (calamagrostis x acutiflora &#x27;karl foerster&#x27; (stricta)" data-svet="солнце" data-pochva=""><h3>Вейник остроцветковый (острочешуйный) &quot;Карл Форстер&quot;  (Calamagrostis x acutiflora &#x27;Karl Foerster&#x27; (Stricta)</h3><div class="norma">3 -  5 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="вейник остроцветковый (острочешуйный) &quot;овердам&quot;  (calamagrostis x acutiflora &#x27; overdam&#x27;)" data-svet="солнце" data-pochva=""><h3>Вейник остроцветковый (острочешуйный) &quot;Овердам&quot;  (Calamagrostis x acutiflora &#x27; Overdam&#x27;)</h3><div class="norma">5 -  6 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="вейник тростниковый (calamagrostis arundinacea)" data-svet="солнце|полутень" data-pochva="песчаные почвы|суглинистые почвы|глинистые почвы|к почвам нетребовательна"><h3>Вейник тростниковый (Calamagrostis arundinacea)</h3><div class="norma">5 – 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">песчаные почвы</span><span class="tag p">суглинистые почвы</span><span class="tag p">глинистые почвы</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="волоснец (колосняк) песчаный (leymus arenarius)" data-svet="солнце" data-pochva=""><h3>Волоснец (Колосняк) песчаный (Leymus arenarius)</h3><div class="norma">4 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="волоснец мягкий (leymus mollis)" data-svet="" data-pochva="песчаные почвы"><h3>Волоснец мягкий (Leymus mollis)</h3><div class="norma">3 - 5 шт/м²</div><div class="tags"><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="двукисточник тростниковидный (aphalaroides arundinacea)" data-svet="" data-pochva="плодородные почвы"><h3>Двукисточник тростниковидный (APhalaroides arundinacea)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="двукисточник японский &quot;лютеопикта&quot;  (phalaroides japonica &#x27;luteopicta&#x27;)" data-svet="солнце|полутень" data-pochva="влажные почвы|глинистые почвы"><h3>Двукисточник японский &quot;Лютеопикта&quot;  (Phalaroides japonica &#x27;Luteopicta&#x27;)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">влажные почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="двукисточник японский &quot;триколор&quot;  (phalaroides japonica &#x27; tricolor&#x27;)" data-svet="солнце|полутень" data-pochva="влажные почвы|глинистые почвы"><h3>Двукисточник японский &quot;Триколор&quot;  (Phalaroides japonica &#x27; Tricolor&#x27;)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">влажные почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="ежа сборная (dactylis glomerata)" data-svet="" data-pochva="бедные почвы|песчаные почвы|суглинистые почвы|глинистые почвы"><h3>Ежа сборная (Dactylis glomerata)</h3><div class="norma">9 - 11 шт/м²</div><div class="tags"><span class="tag p">бедные почвы</span><span class="tag p">песчаные почвы</span><span class="tag p">суглинистые почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="зайцехвостник яйцевидный  (lagurus ovatus)" data-svet="солнце" data-pochva="засухоустойчива"><h3>Зайцехвостник яйцевидный  (Lagurus ovatus)</h3><div class="norma">30-40 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">засухоустойчива</span></div></article><article class="card" data-name="зубровка душистая (hierochloe odorata)" data-svet="" data-pochva="песчаные почвы"><h3>Зубровка душистая (Hierochloe odorata)</h3><div class="norma">7 - 9 шт/м²</div><div class="tags"><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="императа цилиндрическая &quot;рэд барон&quot; (imperata cylindrica &#x27;red baron&#x27; (‘rubra’)" data-svet="" data-pochva="песчаные почвы"><h3>Императа цилиндрическая &quot;Рэд Барон&quot; (Imperata cylindrica &#x27;Red Baron&#x27; (‘Rubra’)</h3><div class="norma">11 -15 шт/м²</div><div class="tags"><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="коротконожка лесная (brachypodium sylvaticum)" data-svet="солнце|полутень" data-pochva="плодородные почвы"><h3>Коротконожка лесная (Brachypodium sylvaticum)</h3><div class="norma">7 - 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="лисохвост луговой &quot;ауреовариегатус&quot; (alopecurus pratensis ‘aureovariegatus’)" data-svet="" data-pochva="плодородные почвы"><h3>Лисохвост луговой &quot;Ауреовариегатус&quot; (Alopecurus pratensis ‘Aureovariegatus’)</h3><div class="norma">9 -11 шт/м²</div><div class="tags"><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="манник большой  (glyceria maxima)" data-svet="солнце" data-pochva=""><h3>Манник большой  (Glyceria maxima)</h3><div class="norma">5 -7 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="манник большой &quot;вариегата&quot; (glyceria maxima &#x27;variegata&#x27;)" data-svet="солнце" data-pochva=""><h3>Манник большой &quot;Вариегата&quot; (Glyceria maxima &#x27;Variegata&#x27;)</h3><div class="norma">5 -7 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="молиния голубая &quot;дауэрштраль&quot;  (molinia caerulea &#x27;dauerstrahl&#x27;)" data-svet="солнце|полутень" data-pochva=""><h3>Молиния голубая &quot;Дауэрштраль&quot;  (Molinia caerulea &#x27;Dauerstrahl&#x27;)</h3><div class="norma">3 - 5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="молиния голубая &quot;муарфламме&quot;  (molinia caerulea &#x27;moorflamme&#x27;)" data-svet="солнце|полутень" data-pochva=""><h3>Молиния голубая &quot;Муарфламме&quot;  (Molinia caerulea &#x27;Moorflamme&#x27;)</h3><div class="norma">5-7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="молиния голубая &quot;муархекс&quot;  (molinia caerulea &#x27;moorhexe&#x27;)" data-svet="солнце|полутень" data-pochva=""><h3>Молиния голубая &quot;Муархекс&quot;  (Molinia caerulea &#x27;Moorhexe&#x27;)</h3><div class="norma">5-7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="молиния голубая &quot;пол петерсен&quot;  (molinia caerulea &#x27;poul petersen&#x27;)" data-svet="солнце|полутень" data-pochva=""><h3>Молиния голубая &quot;Пол Петерсен&quot;  (Molinia caerulea &#x27;Poul Petersen&#x27;)</h3><div class="norma">5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="молиния голубая &quot;хайдебраут&quot; (molinia caerulea &#x27;heidebraut&#x27;)" data-svet="солнце|полутень" data-pochva=""><h3>Молиния голубая &quot;Хайдебраут&quot; (Molinia caerulea &#x27;Heidebraut&#x27;)</h3><div class="norma">5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="молиния голубая &quot;эдит датзас&quot; (molinia caerulea &#x27;edith dudszus&#x27;)" data-svet="солнце|полутень" data-pochva=""><h3>Молиния голубая &quot;Эдит Датзас&quot; (Molinia caerulea &#x27;Edith Dudszus&#x27;)</h3><div class="norma">5-7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="молиния голубая (molinia caerulea)" data-svet="солнце|полутень" data-pochva=""><h3>Молиния голубая (Molinia caerulea)</h3><div class="norma">5 -7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="молиния тростниковидная &quot;виндшпиль&quot;  (molinia arundinacea &#x27;windspiel&#x27;)" data-svet="солнце" data-pochva="к почвам нетребовательна"><h3>Молиния тростниковидная &quot;Виндшпиль&quot;  (Molinia arundinacea &#x27;Windspiel&#x27;)</h3><div class="norma">1-3 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="молиния тростниковидная &quot;карл форстер&quot; (molinia arundinacea &#x27;karl foerster&#x27;)" data-svet="солнце" data-pochva="к почвам нетребовательна"><h3>Молиния тростниковидная &quot;Карл Форстер&quot; (Molinia arundinacea &#x27;Karl Foerster&#x27;)</h3><div class="norma">1-3 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="молиния тростниковидная &quot;скайрейсе&quot;  (molinia arundinacea &#x27;skyracer&#x27;)" data-svet="солнце" data-pochva="к почвам нетребовательна"><h3>Молиния тростниковидная &quot;Скайрейсе&quot;  (Molinia arundinacea &#x27;Skyracer&#x27;)</h3><div class="norma">1-3 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="молиния тростниковидная &quot;транспэрент&quot;  (molinia arundinacea &#x27;transparent&#x27;)" data-svet="солнце" data-pochva="к почвам нетребовательна"><h3>Молиния тростниковидная &quot;Транспэрент&quot;  (Molinia arundinacea &#x27;Transparent&#x27;)</h3><div class="norma">1-3 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="мятлик дубравный (poa nemoralis)" data-svet="тень" data-pochva=""><h3>Мятлик дубравный (Poa nemoralis)</h3><div class="norma">12 -  16 шт/м²</div><div class="tags"><span class="tag s">тень</span></div></article><article class="card" data-name="мятлик шэ (poa chaixii)" data-svet="солнце|полутень" data-pochva=""><h3>Мятлик Шэ (Poa chaixii)</h3><div class="norma">9 -  11 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="овсяница аметистовая (festuca amethystina)" data-svet="солнце" data-pochva="влажные почвы|умеренно влажные|к почвам нетребовательна"><h3>Овсяница аметистовая (Festuca amethystina)</h3><div class="norma">5 -  7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">влажные почвы</span><span class="tag p">умеренно влажные</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="овсяница валлисская (типчак) (festuca valesiaca)" data-svet="солнце" data-pochva="засухоустойчива"><h3>Овсяница валлисская (Типчак) (Festuca valesiaca)</h3><div class="norma">11 -  15 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">засухоустойчива</span></div></article><article class="card" data-name="овсяница метельчатая (готье) (festuca scoparia)" data-svet="" data-pochva="плодородные почвы|песчаные почвы|дренированные почвы"><h3>Овсяница метельчатая (Готье) (Festuca scoparia)</h3><div class="norma">7 – 9 шт/м²</div><div class="tags"><span class="tag p">плодородные почвы</span><span class="tag p">песчаные почвы</span><span class="tag p">дренированные почвы</span></div></article><article class="card" data-name="овсяница мэра (festuca mairei)" data-svet="солнце" data-pochva="засухоустойчива|песчаные почвы|глинистые почвы"><h3>Овсяница Мэра (Festuca mairei)</h3><div class="norma">1- 3 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">засухоустойчива</span><span class="tag p">песчаные почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="овсяница овечья (festuca ovina)" data-svet="солнце" data-pochva="бедные почвы|песчаные почвы"><h3>Овсяница овечья (Festuca ovina)</h3><div class="norma">5- 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">бедные почвы</span><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="овсяница сизая &quot;айс блю&quot; (festuca glauca &#x27;ice blue&#x27;)" data-svet="солнце" data-pochva="сухие почвы|плодородные почвы"><h3>Овсяница сизая &quot;Айс Блю&quot; (Festuca glauca &#x27;Ice Blue&#x27;)</h3><div class="norma">9 -  11 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">сухие почвы</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="овсяница сизая &quot;элайджа блю&quot; (festuca glauca &#x27;elijah blue&#x27;)" data-svet="солнце" data-pochva="сухие почвы|плодородные почвы"><h3>Овсяница сизая &quot;Элайджа Блю&quot; (Festuca glauca &#x27;Elijah Blue&#x27;)</h3><div class="norma">7- 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">сухие почвы</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="овсяница сизая (festuca glauca)" data-svet="солнце" data-pochva="сухие почвы|плодородные почвы"><h3>Овсяница сизая (Festuca glauca)</h3><div class="norma">7- 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">сухие почвы</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="овсяница фиолетовая (меднобурая) (festuca chalcophaea)" data-svet="солнце" data-pochva="умеренно влажные|песчаные почвы|суглинистые почвы"><h3>Овсяница фиолетовая (меднобурая) (Festuca chalcophaea)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">умеренно влажные</span><span class="tag p">песчаные почвы</span><span class="tag p">суглинистые почвы</span></div></article><article class="card" data-name="овсяничник гигантский (schedonorus giganteus)" data-svet="тень" data-pochva="плодородные почвы"><h3>Овсяничник гигантский (Schedonorus giganteus)</h3><div class="norma">3 -  5 шт/м²</div><div class="tags"><span class="tag s">тень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="овёсик извилистый  (avenella flexuosa)" data-svet="полутень" data-pochva="песчаные почвы|кислые почвы"><h3>Овёсик извилистый  (Avenella flexuosa)</h3><div class="norma">9-11 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag p">песчаные почвы</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="ожика альпийско-волосистая (luzula alpino-pilosa)" data-svet="полутень" data-pochva="выдерживает засуху"><h3>Ожика альпийско-волосистая (Luzula alpino-pilosa)</h3><div class="norma">9 -11 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag p">выдерживает засуху</span></div></article><article class="card" data-name="ожика волосистая &quot;игель&quot; (luzula  pilosa ‘igel’)" data-svet="теневынослива" data-pochva="сухие почвы|кислые почвы"><h3>Ожика волосистая &quot;Игель&quot; (Luzula  pilosa ‘Igel’)</h3><div class="norma">16 - 25 шт/м²</div><div class="tags"><span class="tag s">теневынослива</span><span class="tag p">сухие почвы</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="ожика волосистая (luzula  pilosa)" data-svet="теневынослива" data-pochva="сухие почвы|кислые почвы"><h3>Ожика волосистая (Luzula  pilosa)</h3><div class="norma">12 -16 шт/м²</div><div class="tags"><span class="tag s">теневынослива</span><span class="tag p">сухие почвы</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="ожика заостренная (luzula acuminata)" data-svet="солнце|полутень" data-pochva="влажные почвы|плодородные почвы"><h3>Ожика заостренная (Luzula acuminata)</h3><div class="norma">11 - 16 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">влажные почвы</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="ожика лесная (luzula sylvatica)" data-svet="" data-pochva="влажные почвы|кислые почвы"><h3>Ожика лесная (Luzula sylvatica)</h3><div class="norma">9 - 11 шт/м²</div><div class="tags"><span class="tag p">влажные почвы</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="ожика многоцветковая (luzula multiflora)" data-svet="полутень" data-pochva="кислые почвы"><h3>Ожика многоцветковая (Luzula multiflora)</h3><div class="norma">12 – 16 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="ожика снежная (luzula nivea)" data-svet="тень" data-pochva=""><h3>Ожика снежная (Luzula nivea)</h3><div class="norma">9 шт/м²</div><div class="tags"><span class="tag s">тень</span></div></article><article class="card" data-name="осока арнелля (арнелла) (carex arnellii)" data-svet="" data-pochva=""><h3>Осока Арнелля (Арнелла) (Carex arnellii)</h3><div class="norma">9 -  11 шт/м²</div><div class="tags"></div></article><article class="card" data-name="осока висячая (carex pendula)" data-svet="солнце|тень" data-pochva="влажные почвы|глинистые почвы"><h3>Осока висячая (Carex pendula)</h3><div class="norma">3 -  5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">влажные почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="осока власовидная &quot;феникс грин&quot;  (carex comans &#x27;phoenix green&#x27;)" data-svet="солнце|полутень" data-pochva="влажные почвы"><h3>Осока власовидная &quot;Феникс Грин&quot;  (Carex comans &#x27;Phoenix Green&#x27;)</h3><div class="norma">5 -  7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">влажные почвы</span></div></article><article class="card" data-name="осока волосистая (carex pilosa)" data-svet="полутень" data-pochva="влажные почвы|бедные почвы|песчаные почвы|суглинистые почвы|глинистые почвы"><h3>Осока волосистая (Carex pilosa)</h3><div class="norma">11 – 15 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag p">влажные почвы</span><span class="tag p">бедные почвы</span><span class="tag p">песчаные почвы</span><span class="tag p">суглинистые почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="осока гвоздичная (весенняя) (carex caryophyllea)" data-svet="" data-pochva="умеренно влажные|песчаные почвы"><h3>Осока гвоздичная (весенняя) (Carex caryophyllea)</h3><div class="norma">11 – 15 шт/м²</div><div class="tags"><span class="tag p">умеренно влажные</span><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="осока гибридная &quot;битлз&quot;  (carex hybrida &#x27;the beatles&#x27;)" data-svet="" data-pochva="умеренно влажные"><h3>Осока гибридная &quot;Битлз&quot;  (Carex hybrida &#x27;The Beatles&#x27;)</h3><div class="norma">5 – 7 шт/м²</div><div class="tags"><span class="tag p">умеренно влажные</span></div></article><article class="card" data-name="осока гладчайшая (carex laevissima)" data-svet="" data-pochva="влажные почвы"><h3>Осока гладчайшая (Carex laevissima)</h3><div class="norma">5 – 7 шт/м²</div><div class="tags"><span class="tag p">влажные почвы</span></div></article><article class="card" data-name="осока горная (carex montana)" data-svet="солнце" data-pochva="влажные почвы|кислые почвы"><h3>Осока горная (Carex montana)</h3><div class="norma">9 - 11 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">влажные почвы</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="осока грея (carex grayi)" data-svet="солнце|тень" data-pochva="плодородные почвы"><h3>Осока Грея (Carex grayi)</h3><div class="norma">7 – 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="осока заячья (carex leporina)" data-svet="" data-pochva=""><h3>Осока заячья (Carex leporina)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"></div></article><article class="card" data-name="осока золотистая (carex aurea)" data-svet="" data-pochva="кислые почвы"><h3>Осока золотистая (Carex aurea)</h3><div class="norma">9 -  11 шт/м²</div><div class="tags"><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="осока кавказская (carex caucasica)" data-svet="солнце|полутень" data-pochva=""><h3>Осока кавказская (Carex caucasica)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="осока лесная (carex sylvatica)" data-svet="тень" data-pochva=""><h3>Осока лесная (Carex sylvatica)</h3><div class="norma">5 -  7 шт/м²</div><div class="tags"><span class="tag s">тень</span></div></article><article class="card" data-name="осока ложносытевая (carex pseudocyperus)" data-svet="" data-pochva="плодородные почвы"><h3>Осока ложносытевая (Carex pseudocyperus)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="осока морроу &quot;айс дэнс&quot; (carex morrowii &#x27;ice dance&#x27;)" data-svet="солнце|полутень" data-pochva="плодородные почвы"><h3>Осока Морроу &quot;Айс Дэнс&quot; (Carex morrowii &#x27;Ice Dance&#x27;)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="осока морроу &quot;вариегата&quot; (carex morrowii &#x27;variegata&#x27;)" data-svet="солнце|полутень" data-pochva="плодородные почвы"><h3>Осока Морроу &quot;Вариегата&quot; (Carex morrowii &#x27;Variegata&#x27;)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="осока обильнолистная &quot;айриш грин&quot; (carex foliosissima &#x27;irish green&#x27;)" data-svet="солнце|полутень" data-pochva="плодородные почвы"><h3>Осока обильнолистная &quot;Айриш Грин&quot; (Carex foliosissima &#x27;Irish Green&#x27;)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="осока островидная (заостренная)  (carex acutiformis)" data-svet="" data-pochva="влажные почвы"><h3>Осока островидная (заостренная)  (Carex acutiformis)</h3><div class="norma">5 – 7 шт/м²</div><div class="tags"><span class="tag p">влажные почвы</span></div></article><article class="card" data-name="осока пальмолистная &quot;литл мидж&quot; (carex muskingumensis &#x27;little midge&#x27;)" data-svet="солнце|полутень|тень" data-pochva="влажные почвы"><h3>Осока пальмолистная &quot;Литл Мидж&quot; (Carex muskingumensis &#x27;Little Midge&#x27;)</h3><div class="norma">15 - 25 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag s">тень</span><span class="tag p">влажные почвы</span></div></article><article class="card" data-name="осока пальмолистная (carex muskingumensis)" data-svet="солнце|полутень|тень" data-pochva="влажные почвы|сухие почвы"><h3>Осока пальмолистная (Carex muskingumensis)</h3><div class="norma">7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag s">тень</span><span class="tag p">влажные почвы</span><span class="tag p">сухие почвы</span></div></article><article class="card" data-name="осока пальчатая (carex digitata)" data-svet="солнце|тень" data-pochva="умеренно влажные"><h3>Осока пальчатая (Carex digitata)</h3><div class="norma">9 -  11 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">умеренно влажные</span></div></article><article class="card" data-name="осока повислая (carex flacca)" data-svet="" data-pochva="песчаные почвы"><h3>Осока повислая (Carex flacca)</h3><div class="norma">9 - 11 шт/м²</div><div class="tags"><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="осока почерневшая (carex atrata)" data-svet="солнце" data-pochva="влажные почвы"><h3>Осока почерневшая (Carex atrata)</h3><div class="norma">7 - 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">влажные почвы</span></div></article><article class="card" data-name="осока раздвинутая (carex remota)" data-svet="полутень|тень" data-pochva=""><h3>Осока раздвинутая (Carex remota)</h3><div class="norma">7- 9 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag s">тень</span></div></article><article class="card" data-name="осока ржавопятнистая (carex siderosticta)" data-svet="полутень" data-pochva="влажные почвы"><h3>Осока ржавопятнистая (Carex siderosticta)</h3><div class="norma">9- 11 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag p">влажные почвы</span></div></article><article class="card" data-name="осока розовая  (carex rosea)" data-svet="" data-pochva="сухие почвы"><h3>Осока розовая  (Carex rosea)</h3><div class="norma">7 – 9 шт/м²</div><div class="tags"><span class="tag p">сухие почвы</span></div></article><article class="card" data-name="осока соседняя (колосистая)   (carex contigua)" data-svet="тень" data-pochva="умеренно влажные|плодородные почвы"><h3>Осока соседняя (колосистая)   (Carex contigua)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"><span class="tag s">тень</span><span class="tag p">умеренно влажные</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="осока трясунковидная (carex brizoides)" data-svet="тень" data-pochva="бедные почвы|песчаные почвы|кислые почвы"><h3>Осока трясунковидная (Carex brizoides)</h3><div class="norma">9- 11 шт/м²</div><div class="tags"><span class="tag s">тень</span><span class="tag p">бедные почвы</span><span class="tag p">песчаные почвы</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="перистощетинник лисохвостовидный  (pennisetum alopecuroides)" data-svet="" data-pochva="дренированные почвы"><h3>Перистощетинник лисохвостовидный  (Pennisetum alopecuroides)</h3><div class="norma">1 – 3 шт/м²</div><div class="tags"><span class="tag p">дренированные почвы</span></div></article><article class="card" data-name="перловник высокий (melica altissima)" data-svet="солнце|полутень" data-pochva="влажные почвы|умеренно влажные"><h3>Перловник высокий (Melica altissima)</h3><div class="norma">5 – 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">влажные почвы</span><span class="tag p">умеренно влажные</span></div></article><article class="card" data-name="перловник крымский (melica taurica)" data-svet="" data-pochva=""><h3>Перловник крымский (Melica taurica)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"></div></article><article class="card" data-name="перловник поникший (melica nutans)" data-svet="" data-pochva="умеренно влажные|суглинистые почвы|глинистые почвы"><h3>Перловник поникший (Melica nutans)</h3><div class="norma">11 – 15 шт/м²</div><div class="tags"><span class="tag p">умеренно влажные</span><span class="tag p">суглинистые почвы</span><span class="tag p">глинистые почвы</span></div></article><article class="card" data-name="перловник трансильванский (melica transsilvanica)" data-svet="" data-pochva=""><h3>Перловник трансильванский (Melica transsilvanica)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"></div></article><article class="card" data-name="просо лозное &quot;клауд найн&quot;  (panicum virgatum &#x27;cloud nine&#x27;)" data-svet="солнце" data-pochva="плодородные почвы"><h3>Просо лозное &quot;Клауд Найн&quot;  (Panicum virgatum &#x27;Cloud Nine&#x27;)</h3><div class="norma">3 – 5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="просо лозное &quot;хэви метал&quot;  (panicum virgatum &#x27;heavy metal&#x27;)" data-svet="солнце" data-pochva="плодородные почвы"><h3>Просо лозное &quot;Хэви Метал&quot;  (Panicum virgatum &#x27;Heavy Metal&#x27;)</h3><div class="norma">5 -  7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="пушица влагалищная (eriophorum vaginatum)" data-svet="полутень" data-pochva="к почвам нетребовательна"><h3>Пушица влагалищная (Eriophorum vaginatum)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="пушица узколистная (eriophorum angustifolium)" data-svet="солнце" data-pochva="плодородные почвы|кислые почвы"><h3>Пушица узколистная (Eriophorum angustifolium)</h3><div class="norma">7- 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">плодородные почвы</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="пырейник сибирский (elymus sibiricus)" data-svet="полутень" data-pochva="засухоустойчива"><h3>Пырейник сибирский (Elymus sibiricus)</h3><div class="norma">3 -  5 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag p">засухоустойчива</span></div></article><article class="card" data-name="райграс клубненосный &quot;вариегатум&quot; (arrhenatherum bulbosum var. variegatum)" data-svet="" data-pochva=""><h3>Райграс клубненосный &quot;Вариегатум&quot; (Arrhenatherum bulbosum var. Variegatum)</h3><div class="norma">9 - 11 шт/м²</div><div class="tags"></div></article><article class="card" data-name="серобородник сибирский (spodiopogon sibiricus)" data-svet="солнце|полутень" data-pochva="плодородные почвы"><h3>Серобородник сибирский (Spodiopogon sibiricus)</h3><div class="norma">5 – 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="сеслерия белая (осенняя)  (sesleria alba (autumnalis)" data-svet="солнце|полутень" data-pochva=""><h3>Сеслерия белая (осенняя)  (Sesleria alba (autumnalis)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="сеслерия белая подвид серебристая  (sesleria alba subsp. argentea)" data-svet="солнце" data-pochva=""><h3>Сеслерия белая подвид серебристая  (Sesleria alba subsp. argentea)</h3><div class="norma">5 - 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="сеслерия беловатая (sesleria albicans)" data-svet="" data-pochva=""><h3>Сеслерия беловатая (Sesleria albicans)</h3><div class="norma">7 шт/м²</div><div class="tags"></div></article><article class="card" data-name="сеслерия блестящая (sesleria nitida)" data-svet="солнце" data-pochva=""><h3>Сеслерия блестящая (Sesleria nitida)</h3><div class="norma">9 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="сеслерия болотная (голубая)  (sesleria uliginosa (caerulea)" data-svet="" data-pochva=""><h3>Сеслерия болотная (голубая)  (Sesleria uliginosa (caerulea)</h3><div class="norma">—</div><div class="tags"></div></article><article class="card" data-name="сеслерия садлера (sesleria sadleriana)" data-svet="" data-pochva="сухие почвы"><h3>Сеслерия Садлера (Sesleria sadleriana)</h3><div class="norma">7-9 шт/м²</div><div class="tags"><span class="tag p">сухие почвы</span></div></article><article class="card" data-name="сеслерия хефлера (черноцветковая)  (sesleria heufleriana)" data-svet="" data-pochva="сухие почвы"><h3>Сеслерия Хефлера (черноцветковая)  (Sesleria heufleriana)</h3><div class="norma">7 -  9 шт/м²</div><div class="tags"><span class="tag p">сухие почвы</span></div></article><article class="card" data-name="ситник развесистый  (juncus effusus)" data-svet="солнце" data-pochva="к почвам нетребовательна"><h3>Ситник развесистый  (Juncus effusus)</h3><div class="norma">5- 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="ситник склоняющийся &quot;блю эрроус&quot;  (juncus inflexus &#x27;blue arrows&#x27;)" data-svet="солнце" data-pochva="к почвам нетребовательна"><h3>Ситник склоняющийся &quot;Блю Эрроус&quot;  (Juncus inflexus &#x27;Blue arrows&#x27;)</h3><div class="norma">5- 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">к почвам нетребовательна</span></div></article><article class="card" data-name="скрученноостник (овсец) вечнозеленый  (helictotrichon sempervirens)" data-svet="солнце" data-pochva=""><h3>Скрученноостник (Овсец) вечнозеленый  (Helictotrichon sempervirens)</h3><div class="norma">3-5 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="спартина гребенчатая &quot;ауреомаргината&quot;  (spartina pectinata &#x27;aureomarginata&#x27;)" data-svet="солнце" data-pochva=""><h3>Спартина гребенчатая &quot;Ауреомаргината&quot;  (Spartina pectinata &#x27;Aureomarginata&#x27;)</h3><div class="norma">3 - 5 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="спороболус воздушный  (sporobolus airoides)" data-svet="солнце" data-pochva="влажные почвы|выдерживает засуху"><h3>Спороболус воздушный  (Sporobolus airoides)</h3><div class="norma">5- 7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">влажные почвы</span><span class="tag p">выдерживает засуху</span></div></article><article class="card" data-name="спороболус разночешуйный  (sporobolus heterolepis)" data-svet="солнце" data-pochva=""><h3>Спороболус разночешуйный  (Sporobolus heterolepis)</h3><div class="norma">9 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="тимофеевка луговая (phleum pratense)" data-svet="солнце" data-pochva=""><h3>Тимофеевка луговая (Phleum pratense)</h3><div class="norma">9 -  11 шт/м²</div><div class="tags"><span class="tag s">солнце</span></div></article><article class="card" data-name="тимофеевка степная  (phleum phleoides)" data-svet="" data-pochva=""><h3>Тимофеевка степная  (Phleum phleoides)</h3><div class="norma">9 -  11 шт/м²</div><div class="tags"></div></article><article class="card" data-name="тонконог крупноцветковый  (koeleria macrantha)" data-svet="солнце" data-pochva="песчаные почвы"><h3>Тонконог крупноцветковый  (Koeleria macrantha)</h3><div class="norma">11 - 15 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="тонконог сизый &quot;кулио&quot; (koeleria glauca &#x27;coolio&#x27;)" data-svet="солнце" data-pochva="песчаные почвы"><h3>Тонконог сизый &quot;Кулио&quot; (Koeleria glauca &#x27;Coolio&#x27;)</h3><div class="norma">11 - 15 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="тонконог сизый (koeleria glauca)" data-svet="солнце" data-pochva="песчаные почвы"><h3>Тонконог сизый (Koeleria glauca)</h3><div class="norma">11 - 15 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="трясунка средняя(briza media)" data-svet="солнце|полутень" data-pochva=""><h3>Трясунка средняя(Briza media)</h3><div class="norma">7 - 9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span></div></article><article class="card" data-name="хаконехлоя тощая  (hakonechloa macra)" data-svet="полутень|тень" data-pochva="глинистые почвы|дренированные почвы"><h3>Хаконехлоя тощая  (Hakonechloa macra)</h3><div class="norma">9 шт/м²</div><div class="tags"><span class="tag s">полутень</span><span class="tag s">тень</span><span class="tag p">глинистые почвы</span><span class="tag p">дренированные почвы</span></div></article><article class="card" data-name="хаконехлоя тощая &quot;ауреола&quot;  (hakonechloa macra &#x27;aureola&#x27;)" data-svet="солнце|полутень|тень" data-pochva="влажные почвы|глинистые почвы|дренированные почвы"><h3>Хаконехлоя тощая &quot;Ауреола&quot;  (Hakonechloa macra &#x27;Aureola&#x27;)</h3><div class="norma">9 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag s">тень</span><span class="tag p">влажные почвы</span><span class="tag p">глинистые почвы</span><span class="tag p">дренированные почвы</span></div></article><article class="card" data-name="хвощ зимующий (equisetum hyemale)" data-svet="солнце|полутень" data-pochva="песчаные почвы"><h3>Хвощ зимующий (Equisetum hyemale)</h3><div class="norma">9 – 15 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">полутень</span><span class="tag p">песчаные почвы</span></div></article><article class="card" data-name="чий блестящий (neotrinia splendens)" data-svet="солнце" data-pochva="кислые почвы"><h3>Чий блестящий (Neotrinia splendens)</h3><div class="norma">3 -  5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">кислые почвы</span></div></article><article class="card" data-name="чий вейниковый (achnatherum calamagrostis)" data-svet="солнце" data-pochva="выдерживает засуху|бедные почвы|дренированные почвы"><h3>Чий вейниковый (Achnatherum calamagrostis)</h3><div class="norma">3 -  5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag p">выдерживает засуху</span><span class="tag p">бедные почвы</span><span class="tag p">дренированные почвы</span></div></article><article class="card" data-name="щучка дернистая &quot;бронзешлеер&quot; (deschampsia cespitosa &#x27;bronzeschleier&#x27;)" data-svet="солнце|тень" data-pochva="плодородные почвы"><h3>Щучка дернистая &quot;Бронзешлеер&quot; (Deschampsia cespitosa &#x27;Bronzeschleier&#x27;)</h3><div class="norma">5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="щучка дернистая &quot;голдтау&quot; (deschampsia cespitosa &#x27;goldtau&#x27;)" data-svet="солнце|тень" data-pochva="плодородные почвы"><h3>Щучка дернистая &quot;Голдтау&quot; (Deschampsia cespitosa &#x27;Goldtau&#x27;)</h3><div class="norma">5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="щучка дернистая &quot;пикси фонтейн&quot; (deschampsia cespitosa &#x27;pixie fountain&#x27;)" data-svet="солнце|тень" data-pochva="плодородные почвы"><h3>Щучка дернистая &quot;Пикси Фонтейн&quot; (Deschampsia cespitosa &#x27;Pixie Fountain&#x27;)</h3><div class="norma">7 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="щучка дернистая &quot;тоутредже&quot; (deschampsia cespitosa &#x27;tautrager&#x27;)" data-svet="солнце|тень" data-pochva="плодородные почвы"><h3>Щучка дернистая &quot;Тоутредже&quot; (Deschampsia cespitosa &#x27;Tautrager&#x27;)</h3><div class="norma">5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">плодородные почвы</span></div></article><article class="card" data-name="щучка дернистая (deschampsia cespitosa)" data-svet="солнце|тень" data-pochva="плодородные почвы"><h3>Щучка дернистая (Deschampsia cespitosa)</h3><div class="norma">5 шт/м²</div><div class="tags"><span class="tag s">солнце</span><span class="tag s">тень</span><span class="tag p">плодородные почвы</span></div></article></div>
-  <div class="empty" id="empty" style="display:none">
-    <div class="big">🤷</div>Ничего не найдено
-  </div>
+      <div class="bar-actions">
+        <button id="mode">Режим: ИЛИ</button>
+        <button id="reset">Сбросить &times;</button>
+      </div>
+    </div>
 
+    <div class="grid" id="grid"></div>
+
+    <div class="empty" id="empty">
+      <div class="big">🤷</div>
+      Ничего не найдено
+    </div>
   </main>
-</div><script>
 
-var grid = document.getElementById('grid');
+</div>
+
+<script>
+  var grid = document.getElementById('grid');
   var body = document.body;
-var empty = document.getElementById('empty');
-var count = document.getElementById('count');
-var reset = document.getElementById('reset');
-var search = document.getElementById('search');
-var mode = document.getElementById('mode');
+  var empty = document.getElementById('empty');
+  var count = document.getElementById('count');
+  var reset = document.getElementById('reset');
+  var search = document.getElementById('search');
+  var mode = document.getElementById('mode');
+  var themeButton = document.getElementById('theme');
 
-var strictMode = false;
-var akt = {
-  svet: [],
-  pochva: []
-};
+  var strictMode = false;
 
-var cards = [];
-
-function cleanText(text) {
-  return String(text || '').trim();
-}
-
-function escapeHtml(text) {
-  return String(text || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-}
-
-function normalizeName(text) {
-  return String(text || '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function normalizeTag(text) {
-  var tag = String(text || '')
-    .toLowerCase()
-    .replace(/ё/g, 'е')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  var map = {
-    'бедные': 'бедные почвы',
-    'бедная': 'бедные почвы',
-    'бедная почва': 'бедные почвы',
-    'бедные почвы': 'бедные почвы',
-
-    'влажная': 'влажные почвы',
-    'влажные': 'влажные почвы',
-    'влажная почва': 'влажные почвы',
-    'влажные почвы': 'влажные почвы',
-    'сырая': 'влажные почвы',
-    'сырые': 'влажные почвы',
-    'очень влажная': 'влажные почвы',
-    'слегка влажная': 'умеренно влажные',
-
-    'умеренно влажная': 'умеренно влажные',
-    'умеренно влажные': 'умеренно влажные',
-    'умеренно влажные почвы': 'умеренно влажные',
-
-    'дренированная': 'дренированные почвы',
-    'дренированные': 'дренированные почвы',
-    'дренированная почва': 'дренированные почвы',
-    'дренированные почвы': 'дренированные почвы',
-
-    'засухоустойчива': 'засухоустойчива',
-    'засухоустойчивые': 'засухоустойчива',
-    'выдерживает засуху': 'засухоустойчива',
-    'засухоустойчивая': 'засухоустойчива',
-    'полусухая': 'засухоустойчива',
-
-    'глинистые': 'глинистые почвы',
-    'глинистая': 'глинистые почвы',
-    'глинистая почва': 'глинистые почвы',
-    'глинистые почвы': 'глинистые почвы',
-
-    'каменистые': 'каменистые почвы',
-    'каменистая': 'каменистые почвы',
-    'каменистые почвы': 'каменистые почвы',
-
-    'кислые': 'кислые почвы',
-    'кислая': 'кислые почвы',
-    'кислая почва': 'кислые почвы',
-    'кислые почвы': 'кислые почвы',
-
-    'легкие': 'легкие почвы',
-    'легкая': 'легкие почвы',
-    'легкие почвы': 'легкие почвы',
-
-    'нетребователен': 'к почвам нетребовательна',
-    'нетребовательна': 'к почвам нетребовательна',
-    'к почвам нетребователен': 'к почвам нетребовательна',
-    'к почвам нетребовательна': 'к почвам нетребовательна',
-
-    'песчаные': 'песчаные почвы',
-    'песчаная': 'песчаные почвы',
-    'песчаная почва': 'песчаные почвы',
-    'песчаные почвы': 'песчаные почвы',
-
-    'плодородная': 'плодородные почвы',
-    'плодородные': 'плодородные почвы',
-    'плодородная почва': 'плодородные почвы',
-    'плодородные почвы': 'плодородные почвы',
-
-    'рыхлые': 'рыхлые почвы',
-    'рыхлая': 'рыхлые почвы',
-    'рыхлые почвы': 'рыхлые почвы',
-
-    'суглинистые': 'суглинистые почвы',
-    'суглинистая': 'суглинистые почвы',
-    'суглинистая почва': 'суглинистые почвы',
-    'суглинистые почвы': 'суглинистые почвы',
-
-    'сухая': 'сухие почвы',
-    'сухие': 'сухие почвы',
-    'сухая почва': 'сухие почвы',
-    'сухие почвы': 'сухие почвы'
+  var activeFilters = {
+    svet: [],
+    pochva: []
   };
 
-  if (map[tag]) {
-    return map[tag];
+  var cards = [];
+
+  function cleanText(text) {
+    return String(text || '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
-  return tag;
-}
-
-function splitTags(text) {
-  if (!text) {
-    return [];
+  function escapeHtml(text) {
+    return String(text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
-  return String(text)
-    .replaceAll('|', ',')
-    .replaceAll(';', ',')
-    .replaceAll('/', ',')
-    .split(',')
-    .map(function(x) {
-      return normalizeTag(x);
-    })
-    .filter(function(x) {
-      return x.length > 0;
-    });
-}
-
-function makeCard(name, norma, pochvaText, svetText) {
-  var svet = splitTags(svetText);
-  var pochva = splitTags(pochvaText);
-
-  var tags = '';
-
-  svet.forEach(function(t) {
-    tags += '<span class="tag s">' + escapeHtml(t) + '</span>';
-  });
-
-  pochva.forEach(function(t) {
-    tags += '<span class="tag p">' + escapeHtml(t) + '</span>';
-  });
-
-  var article = document.createElement('article');
-  article.className = 'card';
-  article.dataset.name = normalizeName(name);
-  article.dataset.svet = svet.join('|');
-  article.dataset.pochva = pochva.join('|');
-
-  article.innerHTML =
-    '<h3>' + escapeHtml(name) + '</h3>' +
-    '<div class="norma">' + escapeHtml(norma || '—') + ' шт/м²</div>' +
-    '<div class="tags">' + tags + '</div>';
-
-  return article;
-}
-
-function detectSeparator(line) {
-  var commaCount = (line.match(/,/g) || []).length;
-  var semicolonCount = (line.match(/;/g) || []).length;
-
-  if (semicolonCount > commaCount) {
-    return ';';
+  function normalizeName(text) {
+    return cleanText(text)
+      .toLowerCase()
+      .replace(/ё/g, 'е');
   }
 
-  return ',';
-}
+  function normalizeTag(text) {
+    var tag = normalizeName(text);
 
-function parseCSV(text) {
-  text = String(text || '').replace(/^\uFEFF/, '');
+    var map = {
+      'солнце': 'солнце',
+      'полное солнце': 'солнце',
+      'солнечное место': 'солнце',
 
-  var firstLine = text.split(/\r?\n/)[0] || '';
-  var separator = detectSeparator(firstLine);
+      'полутень': 'полутень',
+      'полу тень': 'полутень',
 
-  var rows = [];
-  var row = [];
-  var cell = '';
-  var insideQuotes = false;
+      'тень': 'тень',
 
-  for (var i = 0; i < text.length; i++) {
-    var char = text[i];
-    var next = text[i + 1];
+      'теневынослива': 'теневынослива',
+      'теневыносливая': 'теневынослива',
+      'теневынослив': 'теневынослива',
 
-    if (char === '"' && insideQuotes && next === '"') {
-      cell += '"';
-      i++;
-    } else if (char === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (char === separator && !insideQuotes) {
-      row.push(cell);
-      cell = '';
-    } else if ((char === '\n' || char === '\r') && !insideQuotes) {
-      if (cell || row.length) {
-        row.push(cell);
-        rows.push(row);
-        row = [];
-        cell = '';
-      }
+      'бедные': 'бедные почвы',
+      'бедная': 'бедные почвы',
+      'бедная почва': 'бедные почвы',
+      'бедные почвы': 'бедные почвы',
 
-      if (char === '\r' && next === '\n') {
-        i++;
-      }
-    } else {
-      cell += char;
-    }
-  }
+      'влажная': 'влажные почвы',
+      'влажные': 'влажные почвы',
+      'влажная почва': 'влажные почвы',
+      'влажные почвы': 'влажные почвы',
+      'сырая': 'влажные почвы',
+      'сырые': 'влажные почвы',
+      'очень влажная': 'влажные почвы',
+      'очень влажные': 'влажные почвы',
 
-  if (cell || row.length) {
-    row.push(cell);
-    rows.push(row);
-  }
+      'умеренно влажная': 'умеренно влажные',
+      'умеренно влажные': 'умеренно влажные',
+      'умеренно влажные почвы': 'умеренно влажные',
+      'слегка влажная': 'умеренно влажные',
+      'слегка влажные': 'умеренно влажные',
 
-  return rows;
-}
+      'дренированная': 'дренированные почвы',
+      'дренированные': 'дренированные почвы',
+      'дренированная почва': 'дренированные почвы',
+      'дренированные почвы': 'дренированные почвы',
+      'хорошо дренированные': 'дренированные почвы',
+      'хорошо дренированные почвы': 'дренированные почвы',
 
-function findColumn(headers, possibleNames, defaultIndex) {
-  for (var i = 0; i < headers.length; i++) {
-    var h = normalizeName(headers[i]);
+      'засухоустойчива': 'засухоустойчива',
+      'засухоустойчивая': 'засухоустойчива',
+      'засухоустойчивые': 'засухоустойчива',
+      'выдерживает засуху': 'засухоустойчива',
+      'полусухая': 'засухоустойчива',
 
-    for (var j = 0; j < possibleNames.length; j++) {
-      if (h.indexOf(possibleNames[j]) >= 0) {
-        return i;
-      }
-    }
-  }
+      'глинистые': 'глинистые почвы',
+      'глинистая': 'глинистые почвы',
+      'глинистая почва': 'глинистые почвы',
+      'глинистые почвы': 'глинистые почвы',
 
-  return defaultIndex;
-}
+      'каменистые': 'каменистые почвы',
+      'каменистая': 'каменистые почвы',
+      'каменистая почва': 'каменистые почвы',
+      'каменистые почвы': 'каменистые почвы',
 
-function loadNewCSV() {
-  fetch('new.csv?v=' + Date.now())
-    .then(function(response) {
-      if (!response.ok) {
-        throw new Error('Файл new.csv не найден');
-      }
+      'кислые': 'кислые почвы',
+      'кислая': 'кислые почвы',
+      'кислая почва': 'кислые почвы',
+      'кислые почвы': 'кислые почвы',
 
-      return response.text();
-    })
-    .then(function(text) {
-      var rows = parseCSV(text);
+      'легкие': 'легкие почвы',
+      'легкая': 'легкие почвы',
+      'легкая почва': 'легкие почвы',
+      'легкие почвы': 'легкие почвы',
 
-      if (!rows.length) {
-        startSite();
-        return;
-      }
+      'нетребователен': 'к почвам нетребовательна',
+      'нетребовательна': 'к почвам нетребовательна',
+      'нетребовательные': 'к почвам нетребовательна',
+      'к почвам нетребователен': 'к почвам нетребовательна',
+      'к почвам нетребовательна': 'к почвам нетребовательна',
 
-      var headers = rows[0];
+      'песчаные': 'песчаные почвы',
+      'песчаная': 'песчаные почвы',
+      'песчаная почва': 'песчаные почвы',
+      'песчаные почвы': 'песчаные почвы',
 
-      var nameCol = findColumn(headers, ['название', 'растение', 'name'], 0);
-      var normaCol = findColumn(headers, ['норма', 'посадки', 'шт'], 1);
-      var pochvaCol = findColumn(headers, ['почва', 'почвы'], 2);
-      var svetCol = findColumn(headers, ['свет', 'освещение'], 3);
+      'плодородная': 'плодородные почвы',
+      'плодородные': 'плодородные почвы',
+      'плодородная почва': 'плодородные почвы',
+      'плодородные почвы': 'плодородные почвы',
 
-      var existingNames = {};
+      'рыхлые': 'рыхлые почвы',
+      'рыхлая': 'рыхлые почвы',
+      'рыхлая почва': 'рыхлые почвы',
+      'рыхлые почвы': 'рыхлые почвы',
 
-      [].slice.call(document.querySelectorAll('.card')).forEach(function(card) {
-        var title = card.querySelector('h3') ? card.querySelector('h3').textContent : card.dataset.name;
-        existingNames[normalizeName(title)] = true;
-      });
+      'суглинистые': 'суглинистые почвы',
+      'суглинистая': 'суглинистые почвы',
+      'суглинистая почва': 'суглинистые почвы',
+      'суглинистые почвы': 'суглинистые почвы',
 
-      rows.slice(1).forEach(function(row) {
-        var name = cleanText(row[nameCol]);
-        var norma = cleanText(row[normaCol]);
-        var pochva = cleanText(row[pochvaCol]);
-        var svet = cleanText(row[svetCol]);
-
-        if (!name) {
-          return;
-        }
-
-        var key = normalizeName(name);
-
-        if (existingNames[key]) {
-          return;
-        }
-
-        existingNames[key] = true;
-
-        var card = makeCard(name, norma, pochva, svet);
-        grid.appendChild(card);
-      });
-
-      startSite();
-    })
-    .catch(function() {
-      startSite();
-    });
-}
-
-function prepareOldCards() {
-  [].slice.call(document.querySelectorAll('.card')).forEach(function(card) {
-    card.dataset.name = normalizeName(card.dataset.name || card.textContent);
-
-    var svet = splitTags(card.dataset.svet || '');
-    var pochva = splitTags(card.dataset.pochva || '');
-
-    card.dataset.svet = svet.join('|');
-    card.dataset.pochva = pochva.join('|');
-  });
-}
-
-function collectTags(type) {
-  var result = {};
-
-  cards.forEach(function(card) {
-    var value = card.dataset[type] || '';
-    var arr = value ? value.split('|') : [];
-
-    arr.forEach(function(tag) {
-      tag = normalizeTag(tag);
-
-      if (tag) {
-        result[tag] = true;
-      }
-    });
-  });
-
-  return Object.keys(result).sort(function(a, b) {
-    return a.localeCompare(b, 'ru');
-  });
-}
-
-function rebuildFilters() {
-  var svetRow = document.querySelector('.chip[data-g="svet"]') ? document.querySelector('.chip[data-g="svet"]').parentElement : null;
-  var pochvaRow = document.querySelector('.chip[data-g="pochva"]') ? document.querySelector('.chip[data-g="pochva"]').parentElement : null;
-
-  if (!svetRow || !pochvaRow) {
-    return;
-  }
-
-  svetRow.innerHTML = '<span class="label">Свет</span>';
-  pochvaRow.innerHTML = '<span class="label">Почва</span>';
-
-  collectTags('svet').forEach(function(tag) {
-    var btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.dataset.g = 'svet';
-    btn.dataset.v = tag;
-    btn.textContent = tag;
-    svetRow.appendChild(btn);
-  });
-
-  collectTags('pochva').forEach(function(tag) {
-    var btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.dataset.g = 'pochva';
-    btn.dataset.v = tag;
-    btn.textContent = tag;
-    pochvaRow.appendChild(btn);
-  });
-}
-
-function startSite() {
-  prepareOldCards();
-
-  cards = [].slice.call(document.querySelectorAll('.card'));
-
-  rebuildFilters();
-
-  [].slice.call(document.querySelectorAll('.chip')).forEach(function(b) {
-    b.onclick = function() {
-      toggleValue(akt[b.dataset.g], b.dataset.v);
-      b.classList.toggle('active');
-      filtr();
+      'сухая': 'сухие почвы',
+      'сухие': 'сухие почвы',
+      'сухая почва': 'сухие почвы',
+      'сухие почвы': 'сухие почвы'
     };
+
+    if (map[tag]) {
+      return map[tag];
+    }
+
+    return tag;
+  }
+
+  function splitTags(text) {
+    if (!text) {
+      return [];
+    }
+
+    var parts = String(text)
+      .replace(/\|/g, ',')
+      .replace(/;/g, ',')
+      .replace(/\//g, ',')
+      .split(',');
+
+    var result = {};
+    var list = [];
+
+    parts.forEach(function(part) {
+      var tag = normalizeTag(part);
+
+      if (tag && !result[tag]) {
+        result[tag] = true;
+        list.push(tag);
+      }
+    });
+
+    return list;
+  }
+
+  function makeCard(name, norma, pochvaText, svetText) {
+    var svet = splitTags(svetText);
+    var pochva = splitTags(pochvaText);
+
+    var tags = '';
+
+    svet.forEach(function(tag) {
+      tags += '<span class="tag s">' + escapeHtml(tag) + '</span>';
+    });
+
+    pochva.forEach(function(tag) {
+      tags += '<span class="tag p">' + escapeHtml(tag) + '</span>';
+    });
+
+    var article = document.createElement('article');
+    article.className = 'card';
+    article.dataset.name = normalizeName(name);
+    article.dataset.svet = svet.join('|');
+    article.dataset.pochva = pochva.join('|');
+
+    var normaText = cleanText(norma || '—');
+
+    if (normaText !== '—' && normaText.indexOf('шт') < 0) {
+      normaText += ' шт/м²';
+    }
+
+    article.innerHTML =
+      '<h3>' + escapeHtml(name) + '</h3>' +
+      '<div class="norma">' + escapeHtml(normaText) + '</div>' +
+      '<div class="tags">' + tags + '</div>';
+
+    return article;
+  }
+
+  function detectSeparator(line) {
+    var commaCount = (line.match(/,/g) || []).length;
+    var semicolonCount = (line.match(/;/g) || []).length;
+
+    if (semicolonCount > commaCount) {
+      return ';';
+    }
+
+    return ',';
+  }
+
+  function parseCSV(text) {
+    text = String(text || '').replace(/^\uFEFF/, '');
+
+    var firstLine = text.split(/\r?\n/)[0] || '';
+    var separator = detectSeparator(firstLine);
+
+    var rows = [];
+    var row = [];
+    var cell = '';
+    var insideQuotes = false;
+
+    for (var i = 0; i < text.length; i++) {
+      var char = text[i];
+      var next = text[i + 1];
+
+      if (char === '"' && insideQuotes && next === '"') {
+        cell += '"';
+        i++;
+      } else if (char === '"') {
+        insideQuotes = !insideQuotes;
+      } else if (char === separator && !insideQuotes) {
+        row.push(cell);
+        cell = '';
+      } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+        if (cell || row.length) {
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = '';
+        }
+
+        if (char === '\r' && next === '\n') {
+          i++;
+        }
+      } else {
+        cell += char;
+      }
+    }
+
+    if (cell || row.length) {
+      row.push(cell);
+      rows.push(row);
+    }
+
+    return rows;
+  }
+
+  function findColumn(headers, possibleNames, defaultIndex) {
+    for (var i = 0; i < headers.length; i++) {
+      var header = normalizeName(headers[i]);
+
+      for (var j = 0; j < possibleNames.length; j++) {
+        if (header.indexOf(possibleNames[j]) >= 0) {
+          return i;
+        }
+      }
+    }
+
+    return defaultIndex;
+  }
+
+  function collectTags(type) {
+    var found = {};
+
+    cards.forEach(function(card) {
+      var value = card.dataset[type] || '';
+      var arr = value ? value.split('|') : [];
+
+      arr.forEach(function(tag) {
+        tag = normalizeTag(tag);
+
+        if (tag) {
+          found[tag] = true;
+        }
+      });
+    });
+
+    return Object.keys(found).sort(function(a, b) {
+      return a.localeCompare(b, 'ru');
+    });
+  }
+
+  function rebuildFilters() {
+    var svetRow = document.getElementById('svetFilters');
+    var pochvaRow = document.getElementById('pochvaFilters');
+
+    svetRow.innerHTML = '<span class="label">Свет</span>';
+    pochvaRow.innerHTML = '<span class="label">Почва</span>';
+
+    collectTags('svet').forEach(function(tag) {
+      var button = document.createElement('button');
+      button.className = 'chip';
+      button.dataset.g = 'svet';
+      button.dataset.v = tag;
+      button.textContent = tag;
+      svetRow.appendChild(button);
+    });
+
+    collectTags('pochva').forEach(function(tag) {
+      var button = document.createElement('button');
+      button.className = 'chip';
+      button.dataset.g = 'pochva';
+      button.dataset.v = tag;
+      button.textContent = tag;
+      pochvaRow.appendChild(button);
+    });
+  }
+
+  function toggleValue(arr, value) {
+    var index = arr.indexOf(value);
+
+    if (index < 0) {
+      arr.push(value);
+    } else {
+      arr.splice(index, 1);
+    }
+  }
+
+  function hasAny(cardTags, selectedTags) {
+    for (var i = 0; i < selectedTags.length; i++) {
+      if (cardTags.indexOf(selectedTags[i]) >= 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function filtr() {
+    var query = normalizeName(search.value);
+    var visibleCount = 0;
+
+    cards.forEach(function(card) {
+      var name = normalizeName(card.dataset.name || '');
+      var svet = card.dataset.svet ? card.dataset.svet.split('|') : [];
+      var pochva = card.dataset.pochva ? card.dataset.pochva.split('|') : [];
+
+      var nameOk = name.indexOf(query) >= 0;
+
+      var svetSelected = activeFilters.svet.length > 0;
+      var pochvaSelected = activeFilters.pochva.length > 0;
+
+      var svetOk = !svetSelected || hasAny(svet, activeFilters.svet);
+      var pochvaOk = !pochvaSelected || hasAny(pochva, activeFilters.pochva);
+
+      var filterOk = true;
+
+      if (!strictMode) {
+        if (svetSelected || pochvaSelected) {
+          filterOk = false;
+
+          if (svetSelected && svetOk) {
+            filterOk = true;
+          }
+
+          if (pochvaSelected && pochvaOk) {
+            filterOk = true;
+          }
+        }
+      } else {
+        filterOk = svetOk && pochvaOk;
+      }
+
+      var show = nameOk && filterOk;
+
+      card.style.display = show ? '' : 'none';
+
+      if (show) {
+        visibleCount++;
+      }
+    });
+
+    count.innerHTML = 'Найдено: <b>' + visibleCount + '</b> из ' + cards.length;
+    empty.style.display = visibleCount ? 'none' : 'block';
+
+    reset.style.display = (
+      query ||
+      activeFilters.svet.length ||
+      activeFilters.pochva.length
+    ) ? 'inline-block' : 'none';
+  }
+
+  function startSite() {
+    cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+
+    rebuildFilters();
+
+    filtr();
+  }
+
+  function loadNewCSV() {
+    grid.innerHTML = '';
+    count.textContent = 'Загрузка...';
+
+    fetch('new.csv?v=' + Date.now())
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Файл new.csv не найден');
+        }
+
+        return response.text();
+      })
+      .then(function(text) {
+        var rows = parseCSV(text);
+
+        if (!rows.length) {
+          throw new Error('Файл new.csv пустой');
+        }
+
+        var headers = rows[0];
+
+        var nameCol = findColumn(headers, ['название', 'растение', 'name'], 0);
+        var normaCol = findColumn(headers, ['норма', 'посадки', 'шт'], 1);
+        var pochvaCol = findColumn(headers, ['почва', 'почвы'], 2);
+        var svetCol = findColumn(headers, ['свет', 'освещение'], 3);
+
+        rows.slice(1).forEach(function(row) {
+          var name = cleanText(row[nameCol]);
+          var norma = cleanText(row[normaCol]);
+          var pochva = cleanText(row[pochvaCol]);
+          var svet = cleanText(row[svetCol]);
+
+          if (!name) {
+            return;
+          }
+
+          grid.appendChild(makeCard(name, norma, pochva, svet));
+        });
+
+        startSite();
+      })
+      .catch(function(error) {
+        grid.innerHTML = '';
+        cards = [];
+        count.innerHTML = 'Ошибка: <b>' + escapeHtml(error.message) + '</b>';
+        empty.style.display = 'block';
+      });
+  }
+
+  document.addEventListener('click', function(event) {
+    var button = event.target.closest('.chip');
+
+    if (!button) {
+      return;
+    }
+
+    var group = button.dataset.g;
+    var value = button.dataset.v;
+
+    toggleValue(activeFilters[group], value);
+    button.classList.toggle('active');
+
+    filtr();
   });
 
   search.oninput = filtr;
 
-mode.onclick = function() {
-  if (strictMode === false) {
-    strictMode = true;
-    mode.textContent = 'Режим: И';
-    mode.classList.add('active');
-  } else {
-    strictMode = false;
-    mode.textContent = 'Режим: ИЛИ';
-    mode.classList.remove('active');
-  }
+  mode.onclick = function() {
+    strictMode = !strictMode;
 
-  filtr();
-};
+    if (strictMode) {
+      mode.textContent = 'Режим: И';
+      mode.classList.add('active');
+    } else {
+      mode.textContent = 'Режим: ИЛИ';
+      mode.classList.remove('active');
+    }
+
+    filtr();
+  };
 
   reset.onclick = function() {
     search.value = '';
 
-    akt = {
+    activeFilters = {
       svet: [],
       pochva: []
     };
 
-    [].slice.call(document.querySelectorAll('.chip.active')).forEach(function(c) {
-      c.classList.remove('active');
+    Array.prototype.slice.call(document.querySelectorAll('.chip.active')).forEach(function(button) {
+      button.classList.remove('active');
     });
 
     filtr();
   };
 
-  filtr();
-}
+  function setTheme(theme) {
+    body.dataset.theme = theme;
+    themeButton.textContent = theme === 'dark' ? '☀️' : '🌙';
 
-function toggleValue(arr, value) {
-  var i = arr.indexOf(value);
-
-  if (i < 0) {
-    arr.push(value);
-  } else {
-    arr.splice(i, 1);
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (e) {}
   }
-}
 
-function filtr() {
-  var q = normalizeName(search.value);
-  var n = 0;
-
-  cards.forEach(function(c) {
-    var name = normalizeName(c.dataset.name || '');
-    var svet = c.dataset.svet ? c.dataset.svet.split('|') : [];
-    var pochva = c.dataset.pochva ? c.dataset.pochva.split('|') : [];
-
-    var okName = name.indexOf(q) >= 0;
-
-    var svetVybran = akt.svet.length > 0;
-    var pochvaVybrana = akt.pochva.length > 0;
-
-    var svetPodhodit = false;
-    var pochvaPodhodit = false;
-
-    if (!svetVybran) {
-      svetPodhodit = true;
-    }
-
-    if (!pochvaVybrana) {
-      pochvaPodhodit = true;
-    }
-
-    akt.svet.forEach(function(v) {
-      if (svet.indexOf(v) >= 0) {
-        svetPodhodit = true;
-      }
-    });
-
-    akt.pochva.forEach(function(v) {
-      if (pochva.indexOf(v) >= 0) {
-        pochvaPodhodit = true;
-      }
-    });
-
-    var pokazatPoFiltru = true;
-
-    if (!strictMode) {
-      if (svetVybran || pochvaVybrana) {
-        pokazatPoFiltru = false;
-
-        if (svetVybran && svetPodhodit) {
-          pokazatPoFiltru = true;
-        }
-
-        if (pochvaVybrana && pochvaPodhodit) {
-          pokazatPoFiltru = true;
-        }
-      }
-    }
-
-    if (strictMode) {
-      pokazatPoFiltru = svetPodhodit && pochvaPodhodit;
-    }
-
-    var show = okName && pokazatPoFiltru;
-
-    c.style.display = show ? '' : 'none';
-
-    if (show) {
-      n++;
-    }
-  });
-
-  count.innerHTML = 'Найдено: <b>' + n + '</b> из ' + cards.length;
-  empty.style.display = n ? 'none' : 'block';
-
-  reset.style.display = (
-    q ||
-    akt.svet.length ||
-    akt.pochva.length
-  ) ? 'inline-block' : 'none';
-}
-var tbtn = document.getElementById('theme');
-
-function setTheme(t) {
-  body.dataset.theme = t;
-  tbtn.textContent = t === 'dark' ? '☀️' : '🌙';
+  themeButton.onclick = function() {
+    setTheme(body.dataset.theme === 'dark' ? 'light' : 'dark');
+  };
 
   try {
-    localStorage.setItem('theme', t);
+    var savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia && matchMedia('(prefers-color-scheme:dark)').matches) {
+      setTheme('dark');
+    }
   } catch (e) {}
-}
 
-tbtn.onclick = function() {
-  setTheme(body.dataset.theme === 'dark' ? 'light' : 'dark');
-};
-
-try {
-  var savedTheme = localStorage.getItem('theme');
-
-  if (savedTheme) {
-    setTheme(savedTheme);
-  } else if (matchMedia('(prefers-color-scheme:dark)').matches) {
-    setTheme('dark');
-  }
-} catch (e) {}
-
-loadNewCSV();
+  loadNewCSV();
 </script>
+
 </body>
 </html>
